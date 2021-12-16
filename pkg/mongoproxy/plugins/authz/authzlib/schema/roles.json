@@ -1,0 +1,52 @@
+{
+    "UNAUTHENTICATED": [
+        "UNAUTHENTICATED"
+    ],
+    "role1": [
+        "policy1",
+        "policy2"
+    ],
+    "role2": [
+        "policy1"
+    ],
+    "glob1": [
+        "policy3"
+    ],
+    "glob2": [
+        "policy4"
+    ],
+    "glob3": [
+        "policy5"
+    ],
+    "log1": [
+        "policy6",
+        "policy7"
+    ],
+    "global": [
+        "policy8"
+    ],
+    "multiple_roles1": [
+        "policy9"
+    ],
+    "multiple_roles2": [
+        "policy10"
+    ],
+    "createDB": [
+        "createDB"
+    ],
+    "readDB": [
+        "readDB"
+    ],
+    "deleteDB": [
+        "deleteDB"
+    ],
+    "dbAll": [
+        "dbAll"
+    ],
+    "dbCollectionAll": [
+        "dbCollectionAll"
+    ],
+    "authzRole": [
+        "authzPolicy"
+    ]
+}

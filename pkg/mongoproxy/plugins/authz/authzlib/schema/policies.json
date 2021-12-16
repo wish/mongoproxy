@@ -1,0 +1,834 @@
+{
+    "UNAUTHENTICATED": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Read",
+                "Update",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Global": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Read",
+                "Update",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Read",
+                "Update",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "*",
+                    "Collection": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Read",
+                "Update",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "*",
+                    "Collection": "*",
+                    "Field": "*"
+                }
+            ],
+            "Condition": {}
+        }
+    ],
+    "authzPolicy" : [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Read",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Global": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Read",
+                "Update",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "authzdball",
+                    "Collection": "*"
+                },
+                {
+                    "Database": "authzdball",
+                    "Collection": "*",
+                    "Field": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Read"
+            ],
+            "Resource": [
+                {
+                    "Database": "authzcolcr",
+                    "Collection": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Update"
+            ],
+            "Resource": [
+                {
+                    "Database": "authzcolcu",
+                    "Collection": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Read",
+                "Update"
+            ],
+            "Resource": [
+                {
+                    "Database": "authzcolcru",
+                    "Collection": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Read",
+                "Update"
+            ],
+            "Resource": [
+                {
+                    "Database": "authzcru",
+                    "Collection": "*"
+                },
+                {
+                    "Database": "authzcru",
+                    "Collection": "*",
+                    "Field": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Read"
+            ],
+            "Resource": [
+                {
+                    "Database": "authzdbcr"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Update"
+            ],
+            "Resource": [
+                {
+                    "Database": "authzdbcu"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "authzcolcd",
+                    "Collection": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "authzdbcd"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Read"
+            ],
+            "Resource": [
+                {
+                    "Database": "authzdb",
+                    "Collection": "coll",
+                    "Field": "field"
+                }
+            ],
+            "Condition": {}
+        }
+    ],
+    "policy1" : [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Read",
+                "Update",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "db1",
+                    "Collection": "coll1",
+                    "Field": "field1"
+                },
+                {
+                    "Database": "db1",
+                    "Collection": "coll1",
+                    "Field": "field2"
+                },
+                {
+                    "Database": "db1",
+                    "Collection": "coll1",
+                    "Field": "field3"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Deny",
+            "Action": [
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "db1",
+                    "Collection": "coll1",
+                    "Field": "field3"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Read",
+                "Update",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "db2",
+                    "Collection": "coll1",
+                    "Field": "field1"
+                }
+            ],
+            "Condition": {}
+        }
+    ],
+    "policy2": [
+        {
+            "Effect": "Deny",
+            "Action": [
+                "Create"
+            ],
+            "Resource": [
+                {
+                    "Database": "db1",
+                    "Collection": "coll1",
+                    "Field": "field1"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Read",
+                "Update",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "db1",
+                    "Collection": "coll2",
+                    "Field": "field1"
+                },
+                {
+                    "Database": "db1",
+                    "Collection": "coll2",
+                    "Field": "field2"
+                },
+                {
+                    "Database": "db1",
+                    "Collection": "coll2",
+                    "Field": "field3"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Deny",
+            "Action": [
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "db1",
+                    "Collection": "coll2",
+                    "Field": "field3"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Deny",
+            "Action": [
+                "Create"
+            ],
+            "Resource": [
+                {
+                    "Database": "db2",
+                    "Collection": "coll1",
+                    "Field": "field1"
+                }
+            ],
+            "Condition": {}
+        }
+    ],
+    "policy3": [
+        {
+            "Effect": "Deny",
+            "Action": [
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "coll",
+                    "Field": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Read"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "coll",
+                    "Field": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Deny",
+            "Action": [
+                "Read"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "coll",
+                    "Field": "denied"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Read",
+                "Update",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "coll",
+                    "Field": "allowed1"
+                },
+                {
+                    "Database": "db",
+                    "Collection": "coll",
+                    "Field": "allowed2"
+                },
+                {
+                    "Database": "db",
+                    "Collection": "coll",
+                    "Field": "allowed3"
+                }
+            ],
+            "Condition": {}
+        }
+    ],
+    "policy4": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Read",
+                "Update",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "coll",
+                    "Field": "field"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Deny",
+            "Action": [
+                "Update"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Deny",
+            "Action": [
+                "Update"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "*",
+                    "Field": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Read"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Read"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "*",
+                    "Field": "*"
+                }
+            ],
+            "Condition": {}
+        }
+    ],
+    "policy5": [
+        {
+            "Effect": "Deny",
+            "Action": [
+                "Update"
+            ],
+            "Resource": [
+                {
+                    "Database": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Deny",
+            "Action": [
+                "Update"
+            ],
+            "Resource": [
+                {
+                    "Database": "*",
+                    "Collection": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Deny",
+            "Action": [
+                "Update"
+            ],
+            "Resource": [
+                {
+                    "Database": "*",
+                    "Collection": "*",
+                    "Field": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Read"
+            ],
+            "Resource": [
+                {
+                    "Database": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Read"
+            ],
+            "Resource": [
+                {
+                    "Database": "*",
+                    "Collection": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Read"
+            ],
+            "Resource": [
+                {
+                    "Database": "*",
+                    "Collection": "*",
+                    "Field": "*"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Read",
+                "Update",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "coll",
+                    "Field": "field"
+                }
+            ],
+            "Condition": {}
+        }
+    ],
+    "policy6": [
+        {
+            "Effect": "Allow",
+            "Policy": "LogOnly",
+            "Action": [
+                "Create",
+                "Read",
+                "Update",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "coll",
+                    "Field": "field"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Deny",
+            "Policy": "LogOnly",
+            "Action": [
+                "Read"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "coll",
+                    "Field": "field"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Deny",
+            "Action": [
+                "Update"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "coll",
+                    "Field": "field"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Deny",
+            "Policy": "LogOnly",
+            "Action": [
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "coll",
+                    "Field": "field"
+                }
+            ],
+            "Condition": {}
+        }
+    ],
+    "policy7": [
+        {
+            "Effect": "Deny",
+            "Action": [
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "coll",
+                    "Field": "field"
+                }
+            ],
+            "Condition": {}
+        },
+        {
+            "Effect": "Deny",
+            "Policy": "LogOnly",
+            "Action": [
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "*",
+                    "Field": "field"
+                }
+            ],
+            "Condition": {}
+        }
+    ],
+    "policy8": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Read",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Global": "*"
+                }
+            ],
+            "Condition": {}
+        }
+    ],
+    "policy9": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "coll",
+                    "Field": "field"
+                }
+            ],
+            "Condition": {}
+        }
+    ],
+    "policy10": [
+        {
+            "Effect": "Deny",
+            "Action": [
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "coll",
+                    "Field": "field"
+                }
+            ],
+            "Condition": {}
+        }
+    ],
+    "createDB": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create"
+            ],
+            "Resource": [
+                {
+                    "Database": "db"
+                }
+            ],
+            "Condition": {}
+        }
+    ],
+    "readDB": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Read"
+            ],
+            "Resource": [
+                {
+                    "Database": "db"
+                }
+            ],
+            "Condition": {}
+        }
+    ],
+    "deleteDB": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "db"
+                },
+                {
+                    "Database": "db",
+                    "Collection": "*"
+                }
+            ],
+            "Condition": {}
+        }
+    ],
+    "dbAll": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Read",
+                "Update",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "db"
+                }
+            ],
+            "Condition": {}
+        }
+    ],
+    "dbCollectionAll": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "Create",
+                "Read",
+                "Update",
+                "Delete"
+            ],
+            "Resource": [
+                {
+                    "Database": "db",
+                    "Collection": "*"
+                },
+                {
+                    "Database": "db",
+                    "Collection": "*",
+                    "Field": "*"
+                }
+            ],
+            "Condition": {}
+        }
+    ]
+}

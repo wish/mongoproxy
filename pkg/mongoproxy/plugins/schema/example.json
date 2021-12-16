@@ -1,0 +1,181 @@
+{
+	"dbs": {
+		"testdb": {
+			"denyUnknownCollections": true,
+			"collections": {
+				"hidden": {
+					"annotations": {
+						"skipSchema": "true"
+					}
+				},
+				"bsontypes": {
+					"fields": {
+						"int": {
+							"type": "int"
+						},
+						"long": {
+							"type": "long"
+						},
+						"double": {
+							"type": "double"
+						},
+						"string": {
+							"type": "string"
+						},
+						"object": {
+							"type": "object",
+							"subfields": {
+								"string": {
+									"type": "string"
+								},
+								"int": {
+									"type": "int"
+								}
+							}
+						},
+						"bindata": {
+							"type": "binData"
+						},
+						"objectid": {
+							"type": "objectID"
+						},
+						"bool": {
+							"type": "bool"
+						},
+						"date": {
+							"type": "date"
+						},
+						"regex": {
+							"type": "regex"
+						},
+						"decimal": {
+							"type": "decimal"
+						},
+						"[]string":{
+							"type": "[]string"
+						},
+						"[]int":{
+							"type": "[]int"
+						},
+						"[]long":{
+							"type": "[]long"
+						},
+						"[]double":{
+							"type": "[]double"
+						},
+						"[]bool":{
+							"type": "[]bool"
+						},
+						"[]objectID":{
+							"type": "[]objectID"
+						}
+					},
+					"enforceSchema": true
+				},
+				"requirea": {
+					"fields": {
+						"a": {
+							"required": true,
+							"type": "string"
+						}
+					},
+					"enforceSchema": true
+				},
+				"includerequirea": {
+					"fields": {
+						"included": {
+							"type": "testdb.requirea"
+						},
+						"includedarr":{
+							"type": "[]testdb.requirea"
+						}
+					},
+					"enforceSchema": true
+				},
+				"requireonlya": {
+					"denyUnknownFields": true,
+					"fields": {
+						"a": {
+							"required": true,
+							"type": "string"
+						}
+					},
+					"enforceSchema": true
+				},
+				"requireonlysuba": {
+					"denyUnknownFields": true,
+					"fields": {
+						"doc": {
+							"subfields": {
+								"a": {
+									"required": true,
+									"type": "string"
+								},
+								"notrequired": {
+									"type": "string"
+								}
+							},
+							"type": "object"
+						}
+					},
+					"enforceSchema": true
+				},
+				"requireonlysub": {
+					"denyUnknownFields": true,
+					"fields": {
+						"doc": {
+							"required": true,
+							"subfields": {
+								"a": {
+									"required": true,
+									"type": "string"
+								}
+							},
+							"type": "object"
+						}
+					},
+					"enforceSchema": true
+				},
+				"nonrequire":{
+					"fields": {
+						"age": {
+							"type": "int"
+						},
+						"luckynumbers": {
+							"required": false,
+							"type": "[]int"
+						}
+					},
+					"enforceSchema": true
+				},
+				"testcollection": {
+					"fields": {
+						"age": {
+							"type": "int"
+						},
+						"birth": {
+							"type": "date"
+						},
+						"id": {
+							"type": "objectID"
+						},
+						"friends": {
+							"required": true,
+							"type": "[]string"
+						},
+						"luckynumbers": {
+							"required": false,
+							"type": "[]int"
+						},
+						"name": {
+							"required": false,
+							"type": "string"
+						}
+					},
+					"enforceSchema": true
+				}
+			}
+		}
+	},
+	"mongosEndpoint": "mongodb://localhost:27017"
+}
