@@ -141,6 +141,144 @@ var (
 		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$set", bson.D{{"a", "name"}, {"doc.b", 1}}}}, Err: true},
 
 		//
+		// push tests
+		//
+		// push wrong type
+		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$push", bson.D{{"name", 1}}}}, Err: true},
+		// push unknown field
+		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$push", bson.D{{"unknown", 1}}}}},
+		// push correct type
+		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$push", bson.D{{"name", "name"}}}}},
+
+		// push wrong type
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$push", bson.D{{"a", 1}}}}, Err: true},
+		// push unknown field
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$push", bson.D{{"unknown", 1}}}}},
+		// push correct type
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$push", bson.D{{"a", "name"}}}}},
+		// push extra field
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$push", bson.D{{"a", "name"}, {"b", 1}}}}},
+		// push extra field, don't touch main
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$push", bson.D{{"b", 1}}}}},
+
+		// push wrong type
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$push", bson.D{{"a", 1}}}}, Err: true},
+		// push unknown field
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$push", bson.D{{"unknown", 1}}}}, Err: true},
+		// push correct type
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$push", bson.D{{"a", "name"}}}}},
+		// push extra field
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$push", bson.D{{"a", "name"}, {"b", 1}}}}, Err: true},
+		// push extra field, don't touch main
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$push", bson.D{{"b", 1}}}}, Err: true},
+
+		// push wrong type
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$push", bson.D{{"doc.a", 1}}}}, Err: true},
+		// Miss required "a" subfield (since this is an update; it is assumed already pushed)
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$push", bson.D{{"doc", bson.D{{"notrequired", "name"}}}}}}, Err: false},
+		// push unknown field
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$push", bson.D{{"doc.unknown", 1}}}}, Err: true},
+		// push correct type
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$push", bson.D{{"doc.a", "name"}}}}},
+		// push correct type
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$push", bson.D{{"doc", bson.D{{"a", "name"}}}}}}},
+		// push extra field
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$push", bson.D{{"doc.a", "name"}, {"doc.b", 1}}}}, Err: true},
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$push", bson.D{{"a", "name"}, {"doc.b", 1}}}}, Err: true},
+
+		//
+		// pull tests
+		//
+		// pull wrong type
+		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$pull", bson.D{{"name", 1}}}}, Err: true},
+		// pull unknown field
+		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$pull", bson.D{{"unknown", 1}}}}},
+		// pull correct type
+		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$pull", bson.D{{"name", "name"}}}}},
+
+		// pull wrong type
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$pull", bson.D{{"a", 1}}}}, Err: true},
+		// pull unknown field
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$pull", bson.D{{"unknown", 1}}}}},
+		// pull correct type
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$pull", bson.D{{"a", "name"}}}}},
+		// pull extra field
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$pull", bson.D{{"a", "name"}, {"b", 1}}}}},
+		// pull extra field, don't touch main
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$pull", bson.D{{"b", 1}}}}},
+
+		// pull wrong type
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$pull", bson.D{{"a", 1}}}}, Err: true},
+		// pull unknown field
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$pull", bson.D{{"unknown", 1}}}}, Err: true},
+		// pull correct type
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$pull", bson.D{{"a", "name"}}}}},
+		// pull extra field
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$pull", bson.D{{"a", "name"}, {"b", 1}}}}, Err: true},
+		// pull extra field, don't touch main
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$pull", bson.D{{"b", 1}}}}, Err: true},
+
+		// pull wrong type
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$pull", bson.D{{"doc.a", 1}}}}, Err: true},
+		// Miss required "a" subfield (since this is an update; it is assumed already pulled)
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$pull", bson.D{{"doc", bson.D{{"notrequired", "name"}}}}}}, Err: false},
+		// pull unknown field
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$pull", bson.D{{"doc.unknown", 1}}}}, Err: true},
+		// pull correct type
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$pull", bson.D{{"doc.a", "name"}}}}},
+		// pull correct type
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$pull", bson.D{{"doc", bson.D{{"a", "name"}}}}}}},
+		// pull extra field
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$pull", bson.D{{"doc.a", "name"}, {"doc.b", 1}}}}, Err: true},
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$pull", bson.D{{"a", "name"}, {"doc.b", 1}}}}, Err: true},
+
+		//
+		// setToAdd tests
+		//
+		// setToAdd wrong type
+		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$setToAdd", bson.D{{"name", 1}}}}, Err: true},
+		// setToAdd unknown field
+		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$setToAdd", bson.D{{"unknown", 1}}}}},
+		// setToAdd correct type
+		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$setToAdd", bson.D{{"name", "name"}}}}},
+
+		// setToAdd wrong type
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$setToAdd", bson.D{{"a", 1}}}}, Err: true},
+		// setToAdd unknown field
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$setToAdd", bson.D{{"unknown", 1}}}}},
+		// setToAdd correct type
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$setToAdd", bson.D{{"a", "name"}}}}},
+		// setToAdd extra field
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$setToAdd", bson.D{{"a", "name"}, {"b", 1}}}}},
+		// setToAdd extra field, don't touch main
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$setToAdd", bson.D{{"b", 1}}}}},
+
+		// setToAdd wrong type
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$setToAdd", bson.D{{"a", 1}}}}, Err: true},
+		// setToAdd unknown field
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$setToAdd", bson.D{{"unknown", 1}}}}, Err: true},
+		// setToAdd correct type
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$setToAdd", bson.D{{"a", "name"}}}}},
+		// setToAdd extra field
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$setToAdd", bson.D{{"a", "name"}, {"b", 1}}}}, Err: true},
+		// setToAdd extra field, don't touch main
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$setToAdd", bson.D{{"b", 1}}}}, Err: true},
+
+		// setToAdd wrong type
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$setToAdd", bson.D{{"doc.a", 1}}}}, Err: true},
+		// Miss required "a" subfield
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$setToAdd", bson.D{{"doc", bson.D{{"notrequired", "name"}}}}}}, Err: false},
+		// setToAdd unknown field
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$setToAdd", bson.D{{"doc.unknown", 1}}}}, Err: true},
+		// setToAdd correct type
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$setToAdd", bson.D{{"doc.a", "name"}}}}},
+		// setToAdd correct type
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$setToAdd", bson.D{{"doc", bson.D{{"a", "name"}}}}}}},
+		// setToAdd extra field
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$setToAdd", bson.D{{"doc.a", "name"}, {"doc.b", 1}}}}, Err: true},
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$setToAdd", bson.D{{"a", "name"}, {"doc.b", 1}}}}, Err: true},
+
+		//
 		// rename tests
 		//
 		// rename; valid
