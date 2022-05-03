@@ -264,6 +264,33 @@ func (p *Proxy) baseRequestHandler(ctx context.Context, r *plugins.Request) (bso
 			{"ok", 1},
 		}, nil
 
+	case *command.Hello:
+		ret := bson.D{
+			{"isWritablePrimary", true},
+			{"localTime", time.Now().Truncate(time.Millisecond)},
+			{"logicalSessionTimeoutMinutes", 30},
+			{"maxBsonObjectSize", bsonutil.MaxBsonObjectSize},
+			{"maxMessageSizeBytes", 48000000},
+			{"maxWireVersion", 8},
+			{"maxWriteBatchSize", 100000},
+			{"minWireVersion", 0},
+			{"msg", "isdbgrid"},
+			{"ok", 1},
+		}
+		if len(p.cfg.Compressors) > 0 && len(cmd.Compression) > 0 {
+			var compressors primitive.A
+			for _, clientC := range cmd.Compression {
+				for _, serverC := range p.cfg.Compressors {
+					if clientC == serverC {
+						compressors = append(compressors, clientC)
+						break
+					}
+				}
+			}
+			ret = append(ret, bson.E{"compression", compressors})
+		}
+		return ret, nil
+
 	case *command.IsMaster:
 		ret := bson.D{
 			{"ismaster", true},

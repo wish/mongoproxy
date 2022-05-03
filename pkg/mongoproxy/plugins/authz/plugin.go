@@ -33,6 +33,7 @@ var (
 	OPEN_COMMAND = map[string]struct{}{
 		"isMaster":         {},
 		"ismaster":         {},
+		"hello":            {},
 		"buildInfo":        {},
 		"buildinfo":        {},
 		"connectionStatus": {},
