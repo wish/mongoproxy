@@ -26,7 +26,7 @@ jobs:
         go-version: 1.17
 
     - name: install
-      run: GO111MODULE=off go get golang.org/x/tools/cmd/goimports honnef.co/go/tools/cmd/staticcheck
+      run: GO111MODULE=off go get golang.org/x/tools/cmd/goimports honnef.co/go/tools/cmd/staticcheck@master
 
     - name: Test
       run: |
