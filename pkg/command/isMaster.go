@@ -16,7 +16,7 @@ func init() {
 	})
 }
 
-// IsMaster mongo command
+// IsMaster mongo command test
 type IsMaster struct {
 	IsMaster       int      `bson:"isMaster"`
 	IsMasterLegacy int      `bson:"ismaster"`
