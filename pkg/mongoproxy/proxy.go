@@ -275,6 +275,7 @@ func (p *Proxy) baseRequestHandler(ctx context.Context, r *plugins.Request) (bso
 			{"maxWriteBatchSize", 100000},
 			{"minWireVersion", 0},
 			{"msg", "isdbgrid"},
+			{"helloOk", false},
 			{"ok", 1},
 		}
 
@@ -308,7 +309,7 @@ func (p *Proxy) Serve() error {
 			default:
 			}
 
-			if ne, ok := err.(net.Error); ok && ne.Temporary() {
+			if ne, ok := err.(net.Error); ok && ne.Timeout() {
 				if tempDelay == 0 {
 					tempDelay = 5 * time.Millisecond
 				} else {
