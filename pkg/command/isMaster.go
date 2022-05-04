@@ -20,6 +20,7 @@ func init() {
 type IsMaster struct {
 	IsMaster       int      `bson:"isMaster"`
 	IsMasterLegacy int      `bson:"ismaster"`
+	HelloOk        bool     `bson:"helloOk"`
 	Client         bson.D   `bson:"client"` // TODO parse out
 	Compression    []string `bson:"compression"`
 	HostInfo       string   `bson:"hostInfo"`

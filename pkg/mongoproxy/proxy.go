@@ -275,6 +275,7 @@ func (p *Proxy) baseRequestHandler(ctx context.Context, r *plugins.Request) (bso
 			{"maxWriteBatchSize", 100000},
 			{"minWireVersion", 0},
 			{"msg", "isdbgrid"},
+			{"helloOk", false},
 			{"ok", 1},
 		}
 
