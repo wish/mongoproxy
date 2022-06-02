@@ -68,6 +68,9 @@
 						},
 						"[]objectID":{
 							"type": "[]objectID"
+						},
+						"[]object":{
+							"type": "[]object"
 						}
 					},
 					"enforceSchema": true

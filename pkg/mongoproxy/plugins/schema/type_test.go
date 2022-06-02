@@ -620,6 +620,11 @@ func Test_SchemaTypes(t *testing.T) {
 			valid:     []interface{}{bson.A{primitive.ObjectID{}, primitive.ObjectID{}}},
 			invalid:   []interface{}{bson.A{"1", nil}},
 		},
+		{
+			fieldType: "[]object",
+			valid:     []interface{}{bson.A{bson.D{{"string", "b"}}}},
+			invalid:   []interface{}{bson.A{"bar", nil, 1}},
+		},
 	}
 
 	for i, test := range typeTests {

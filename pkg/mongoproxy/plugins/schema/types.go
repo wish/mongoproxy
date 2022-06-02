@@ -24,6 +24,7 @@ const (
 	STRING          BSONType = "string"
 	STRING_ARRAY    BSONType = "[]string"
 	OBJECT          BSONType = "object"
+	OBJECT_ARRAY    BSONType = "[]object"
 	BIN_DATA        BSONType = "binData"
 	BIN_DATA_ARRAY  BSONType = "[]binData"
 	OBJECT_ID       BSONType = "objectID"
@@ -484,6 +485,20 @@ func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnkno
 			if ok {
 				// On update ($set) if we have an OBJECT type it is replacing the document, so we validate as insert
 				if err := Validate(ctx, vTyped, c.SubFields, denyUnknownFields, isUpdate); err != nil {
+					return err
+				}
+			}
+		}
+	case OBJECT_ARRAY:
+		switch vTyped := v.(type) {
+		case bson.A:
+			ok = true
+			for _, d := range vTyped {
+				dType, ok := d.(bson.D)
+				if !ok {
+					return fmt.Errorf("#{dType}: is not object")
+				}
+				if err := Validate(ctx, dType, c.SubFields, denyUnknownFields, isUpdate); err != nil {
 					return err
 				}
 			}
