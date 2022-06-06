@@ -425,7 +425,7 @@ func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnkno
 		}
 	case INT_ARRAY:
 		switch vTyped := v.(type) {
-		case bson.A:
+		case primitive.A:
 			ok = true
 			for _, d := range vTyped {
 				if err := c.ValidateElement(ctx, d, INT); err != nil {
@@ -440,7 +440,7 @@ func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnkno
 		}
 	case LONG_ARRAY:
 		switch vTyped := v.(type) {
-		case bson.A:
+		case primitive.A:
 			ok = true
 			for _, d := range vTyped {
 				if err := c.ValidateElement(ctx, d, LONG); err != nil {
@@ -455,7 +455,7 @@ func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnkno
 		}
 	case DOUBLE_ARRAY:
 		switch vTyped := v.(type) {
-		case bson.A:
+		case primitive.A:
 			ok = true
 			for _, d := range vTyped {
 				if err := c.ValidateElement(ctx, d, DOUBLE); err != nil {
@@ -470,7 +470,7 @@ func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnkno
 		}
 	case STRING_ARRAY:
 		switch vTyped := v.(type) {
-		case bson.A:
+		case primitive.A:
 			ok = true
 			for _, d := range vTyped {
 				if err := c.ValidateElement(ctx, d, STRING); err != nil {
@@ -491,7 +491,7 @@ func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnkno
 		}
 	case OBJECT_ARRAY:
 		switch vTyped := v.(type) {
-		case bson.A:
+		case primitive.A:
 			ok = true
 			for _, d := range vTyped {
 				dType, ok := d.(bson.D)
@@ -510,7 +510,7 @@ func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnkno
 		}
 	case BIN_DATA_ARRAY:
 		switch vTyped := v.(type) {
-		case bson.A:
+		case primitive.A:
 			ok = true
 			for _, d := range vTyped {
 				if err := c.ValidateElement(ctx, d, BIN_DATA); err != nil {
@@ -540,7 +540,7 @@ func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnkno
 		}
 	case BOOL_ARRAY:
 		switch vTyped := v.(type) {
-		case bson.A:
+		case primitive.A:
 			ok = true
 			for _, d := range vTyped {
 				if err := c.ValidateElement(ctx, d, BOOL); err != nil {
@@ -555,7 +555,7 @@ func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnkno
 		}
 	case DATE_ARRAY:
 		switch vTyped := v.(type) {
-		case bson.A:
+		case primitive.A:
 			ok = true
 			for _, d := range vTyped {
 				if err := c.ValidateElement(ctx, d, DATE); err != nil {
