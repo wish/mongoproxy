@@ -525,7 +525,7 @@ func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnkno
 		}
 	case OBJECT_ID_ARRAY:
 		switch vTyped := v.(type) {
-		case bson.A:
+		case primitive.A:
 			ok = true
 			for _, d := range vTyped {
 				if err := c.ValidateElement(ctx, d, OBJECT_ID); err != nil {
