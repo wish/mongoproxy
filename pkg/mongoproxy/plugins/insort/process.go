@@ -56,7 +56,7 @@ func genericLess(a, b interface{}) bool {
 		case primitive.Regex:
 			otherVal = otherValTyped.Pattern
 		default:
-			panic("what")
+			panic("cannot find correct type in Process #{valTyped}")
 		}
 		return strings.Compare(valTyped.Pattern, otherVal) < 0
 	case primitive.Decimal128:

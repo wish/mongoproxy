@@ -141,7 +141,7 @@ type Proxy struct {
 func (p *Proxy) GetCursor(cursorID int64) *plugins.CursorCacheEntry {
 	v, err := p.cursorCache.Get(strconv.FormatInt(cursorID, 10))
 	if err == ttlcache.ErrNotFound {
-		panic("what")
+		panic("can't get cursor")
 	}
 
 	return v.(*plugins.CursorCacheEntry)
