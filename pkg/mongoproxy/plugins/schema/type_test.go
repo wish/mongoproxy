@@ -139,7 +139,11 @@ var (
 		// set wrong type
 		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$set", bson.D{{"doc.a", 1}}}}, Err: true},
 		// Miss required "a" subfield (since this is an update; it is assumed already set)
-		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$set", bson.D{{"doc", bson.D{{"notrequired", "name"}}}}}}, Err: false},
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$set", bson.D{{"doc", bson.D{{"notrequired", 1}}}}}}, Err: true},
+		// Miss required "a" subfield (since this is an update; it is assumed already set)
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$set", bson.D{{"doc", bson.D{{"a", "test"}}}}}}, Err: false},
+		// Miss required "a" subfield (since this is an update; it is assumed already set)
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$set", bson.D{{"doc", bson.D{{"a", 1}}}}}}, Err: true},
 		// set unknown field
 		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$set", bson.D{{"doc.unknown", 1}}}}, Err: true},
 		// set correct type

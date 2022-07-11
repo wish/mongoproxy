@@ -335,7 +335,7 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 			return fmt.Errorf("cannot set unknown field: %s", k)
 		}
 		//verify that setFields are required before validate
-		if f != nil && f.Required {
+		if f != nil {
 			if err := f.Validate(ctx, v, c.DenyUnknownFields, true); err != nil {
 				return err
 			}
