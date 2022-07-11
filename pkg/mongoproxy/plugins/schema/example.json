@@ -189,6 +189,15 @@
 					},
 					"enforceSchema": true
 				},
+				"requireadollarsign": {
+					"fields": {
+						"$id": {
+							"required": true,
+							"type": "string"
+						}
+					},
+					"enforceSchema": true
+				},
 				"includerequirea": {
 					"fields": {
 						"included": {

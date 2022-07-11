@@ -31,7 +31,7 @@ var (
 		// Check int array
 		{DB: "testdb", Collection: "nonrequire", In: bson.D{{"luckynumbers", bson.A{666, 888}}}, Err: false},
 		// Check int array with wrong type
-		{DB: "testdb", Collection: "nonrequire", In: bson.D{{"luckynumbers", bson.A{666, "888"}}}, Err: false},
+		{DB: "testdb", Collection: "nonrequire", In: bson.D{{"luckynumbers", bson.A{666, "888"}}}, Err: true},
 
 		// Check that required checks empty
 		{DB: "testdb", Collection: "requirea", In: bson.D{}, Err: true},
@@ -47,7 +47,7 @@ var (
 		{DB: "testdb", Collection: "includerequirea", In: bson.D{{"included", 1}}, Err: true},
 		// Check that not all required  in expected case
 		{DB: "testdb", Collection: "includerequirea", In: bson.D{{"included", bson.D{{"a", "test"}}}}, Err: false},
-		// Check that required works in expected case with extra field
+		// Check that required works as expected case with extra field
 		{DB: "testdb", Collection: "includerequirea", In: bson.D{{"included", bson.D{{"a", "test"}, {"b", 1}}}}, Err: false},
 
 		// Check that missing required works in expected case
@@ -73,6 +73,16 @@ var (
 		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"doc", bson.D{{"a", "a"}}}}, Err: false},
 		// Check that required works in expected case with extra field
 		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"doc", bson.D{{"a", "a"}, {"b", "b"}}}}, Err: true},
+		// Check that non required works in expected case
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"doc", bson.D{{"a", "a"}, {"notrequired", nil}}}}, Err: false},
+		// Check that non required works in expected case
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"doc", bson.D{{"a", "a"}, {"notrequired", "1"}}}}, Err: false},
+		// Check that non required with invalid type works in expected case
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"doc", bson.D{{"a", "a"}, {"notrequired", 1}}}}, Err: true},
+		// Check that required with empty works in expected case
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"doc", bson.D{{"a", ""}, {"notrequired", 1}}}}, Err: true},
+		// Check that required with nil works in expected case
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"doc", bson.D{{"a", nil}, {"notrequired", 1}}}}, Err: true},
 		// Check that fails if missing subfield
 		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"doc", bson.D{}}}, Err: true},
 
@@ -355,6 +365,22 @@ var (
 		{DB: "testdb", Collection: "nonrequire", In: bson.D{
 			{"$set", bson.D{{"a", "a"}}},
 			{"$setOnInsert", bson.D{{"a", nil}}},
+		}, Upsert: true},
+		// update without update operator with invalid value
+		{DB: "testdb", Collection: "nonrequire", In: bson.D{
+			{"age", "9"},
+		}, Upsert: true, Err: true},
+		// update without update operator with valid value
+		{DB: "testdb", Collection: "nonrequire", In: bson.D{
+			{"age", 1},
+		}, Upsert: true},
+		// update without "$" with invalid value
+		{DB: "testdb", Collection: "requireadollarsign", In: bson.D{
+			{"$id", 1},
+		}, Upsert: true, Err: true},
+		// update without "$" with valid value
+		{DB: "testdb", Collection: "requireadollarsign", In: bson.D{
+			{"$id", "a"},
 		}, Upsert: true},
 
 		// included schema

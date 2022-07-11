@@ -39,6 +39,7 @@ const (
 
 	SKIP_SCHEMA_ANNOTATION = "skipSchema"
 )
+var OpMap = BuildUpdateOpSet()
 
 type ClusterSchema struct {
 	MongosEndpoint       string              `json:"mongosEndpoint"`
@@ -241,18 +242,13 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 		* A replacement document with only <field1>: <value1> pairs
 		https://www.mongodb.com/docs/v4.2/reference/command/update/#update-statement-documents
 	*/
-	op_map := BuildUpdateOpSet()
-	if !strings.HasPrefix(obj[0].Key, "$") || !SetContain(op_map, obj[0].Key) {
+	if !strings.HasPrefix(obj[0].Key, "$") || !SetContain(OpMap, obj[0].Key) {
 		m := make(bson.M, len(obj))
 		if upsert {
-			logrus.Debugf("upsert true, pending check")
 			insertFields = handleObj(obj, m)
-			logrus.Debugf("insertFields updated")
 			logrus.Debugf("insertFields: %s", insertFields)
 		} else {
-			logrus.Debugf("upsert false with nil setFeild, pending check")
 			setFields = handleObj(obj, m)
-			logrus.Debugf("setFields updated")
 			logrus.Debugf("setFields: %s", setFields)
 		}
 	} else{

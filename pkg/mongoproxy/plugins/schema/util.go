@@ -24,11 +24,11 @@ func Validate(ctx context.Context, obj bson.D, fields map[string]CollectionField
 		// If this is an update all `Required` fields should already be set (upper layers
 		// ensure that they aren't un-set). Otherwise we'd require all required fields in
 		// the update doc which is impractical
-		if !isUpdate && f.Required && !ok {
+		if !isUpdate && f.Required && (!ok ||  objV == nil) {
 			return fmt.Errorf("missing required field: %s", k)
 		}
 
-		if f.Required && ok {
+		if objV != nil && ok {
 			if err := f.Validate(ctx, objV, denyUnknownFields, isUpdate); err != nil {
 				return err
 			}

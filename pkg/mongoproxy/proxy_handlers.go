@@ -195,7 +195,7 @@ func (p *Proxy) handleOpQuery(ctx context.Context, cc *plugins.ClientConnection,
 					downstreamQuery = append(downstreamQuery, qV)
 				default:
 					fmt.Println("TODO", qV)
-					panic("not supported qV key type #{qV.Key}")
+					panic(fmt.Errorf("not supported qV key type:  %s", qV.Key))
 				}
 
 			}
