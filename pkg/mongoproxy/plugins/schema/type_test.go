@@ -25,7 +25,7 @@ var (
 		{DB: "testdb", Collection: "nonrequire", In: bson.D{}, Err: false},
 		{DB: "testdb", Collection: "testcollection", In: bson.D{}, Err: true},
 		// Check string array
-		{DB: "testdb", Collection: "testcollection", In: bson.D{{"friends", bson.A{"bob", "alice"}},{"name", "tom"}}, Err: false},
+		{DB: "testdb", Collection: "testcollection", In: bson.D{{"friends", bson.A{"bob", "alice"}}, {"name", "tom"}}, Err: false},
 		// Check string array with wrong type
 		{DB: "testdb", Collection: "testcollection", In: bson.D{{"friends", bson.A{"bob", 1}}}, Err: true},
 		// Check int array
@@ -691,10 +691,9 @@ func Test_SchemaTypes(t *testing.T) {
 
 }
 
-
-func SchemaTypesTestHelper(t *testing.T, typeTest TypeTest , collection string, schema ClusterSchema) {
+func SchemaTypesTestHelper(t *testing.T, typeTest TypeTest, collection string, schema ClusterSchema) {
 	t.Run(strconv.Itoa(0)+"_"+typeTest.fieldType, func(t *testing.T) {
-		for i, e := range(typeTest.valid) {
+		for i, e := range typeTest.valid {
 			t.Run(strconv.Itoa(i), func(t *testing.T) {
 				err := schema.ValidateInsert(context.TODO(), "testdb", collection, bson.D{{typeTest.fieldType, e}})
 				if err != nil {
@@ -702,12 +701,13 @@ func SchemaTypesTestHelper(t *testing.T, typeTest TypeTest , collection string, 
 				}
 			})
 		}
-		for i, e := range(typeTest.invalid) {
+		for i, e := range typeTest.invalid {
 			t.Run(strconv.Itoa(i), func(t *testing.T) {
 				err := schema.ValidateInsert(context.TODO(), "testdb", collection, bson.D{{typeTest.fieldType, e}})
 				if err == nil {
 					t.Fatalf("Missing expected error")
 				}
 			})
-	}})
+		}
+	})
 }

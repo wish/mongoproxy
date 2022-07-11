@@ -39,6 +39,7 @@ const (
 
 	SKIP_SCHEMA_ANNOTATION = "skipSchema"
 )
+
 var OpMap = BuildUpdateOpSet()
 
 type ClusterSchema struct {
@@ -251,7 +252,7 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 			setFields = handleObj(obj, m)
 			logrus.Debugf("setFields: %s", setFields)
 		}
-	} else{
+	} else {
 		for _, e := range obj {
 			logrus.Debugf("update with operator: %s", e.Key)
 			switch e.Key {

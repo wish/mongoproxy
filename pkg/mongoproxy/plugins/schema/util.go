@@ -24,7 +24,7 @@ func Validate(ctx context.Context, obj bson.D, fields map[string]CollectionField
 		// If this is an update all `Required` fields should already be set (upper layers
 		// ensure that they aren't un-set). Otherwise we'd require all required fields in
 		// the update doc which is impractical
-		if !isUpdate && f.Required && (!ok ||  objV == nil) {
+		if !isUpdate && f.Required && (!ok || objV == nil) {
 			return fmt.Errorf("missing required field: %s", k)
 		}
 
@@ -84,7 +84,7 @@ func ToBsonD(m bson.M) bson.D {
 	return r
 }
 
-func BuildUpdateOpSet() (map[string]struct{}) {
+func BuildUpdateOpSet() map[string]struct{} {
 	m := make(map[string]struct{})
 	var exists = struct{}{}
 
