@@ -441,7 +441,8 @@ func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnkno
 	logrus.Debugf("print collection type: %v", validateType)
 	logrus.Debugf("print interface type: %v", reflect.TypeOf(v))
 	interfaceType := fmt.Sprint(reflect.TypeOf(v))
-	if isUpdate { // array update is validating a scalar instead of []
+	if isUpdate {
+		// array update need to check input type
 		if !strings.HasPrefix(interfaceType, "[]") && interfaceType != "primitive.A" {
 			validateType = BSONType(strings.Trim(string(validateType), "[]"))
 		}
