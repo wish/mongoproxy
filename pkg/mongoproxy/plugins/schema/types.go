@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
-
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"reflect"
+	"strings"
 )
 
 type BSONType string
@@ -438,8 +438,13 @@ func (c *CollectionField) ValidateElement(ctx context.Context, d interface{}, va
 // ValidateInsert will validate the schema of the passed in object.
 func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnknownFields, isUpdate bool) error {
 	validateType := c.Type
+	logrus.Debugf("print collection type: %v", validateType)
+	logrus.Debugf("print interface type: %v", reflect.TypeOf(v))
+	interfaceType := fmt.Sprint(reflect.TypeOf(v))
 	if isUpdate { // array update is validating a scalar instead of []
-		validateType = BSONType(strings.Trim(string(validateType), "[]"))
+		if !strings.HasPrefix(interfaceType, "[]") && interfaceType != "primitive.A" {
+			validateType = BSONType(strings.Trim(string(validateType), "[]"))
+		}
 	}
 	ok := false
 	switch validateType {
@@ -630,7 +635,7 @@ func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnkno
 	}
 
 	if !ok {
-		return fmt.Errorf("%s: wrong data type: expecting a %v but got %T", c.Name, c.Type, v)
+		return fmt.Errorf("wrong data type: expecting a %v but got %T", c.Type, v)
 	}
 	return nil
 }

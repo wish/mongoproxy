@@ -3,6 +3,7 @@ package schema
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"regexp"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -24,11 +25,12 @@ func Validate(ctx context.Context, obj bson.D, fields map[string]CollectionField
 		// If this is an update all `Required` fields should already be set (upper layers
 		// ensure that they aren't un-set). Otherwise we'd require all required fields in
 		// the update doc which is impractical
-		if !isUpdate && f.Required && (!ok || objV == nil) {
-			return fmt.Errorf("missing required field: %s", k)
+		if !isUpdate && f.Required && (!ok || !CheckObjectNonEmpty(objV)) {
+			return fmt.Errorf("missing required field: %s, or value: %s in object : %s", k, objV, objMap)
 		}
 
-		if objV != nil && ok {
+		// check non-required field's interface{} array object value is not null nor empty
+		if objV != nil && CheckObjectNonEmpty(objV) && ok {
 			if err := f.Validate(ctx, objV, denyUnknownFields, isUpdate); err != nil {
 				return err
 			}
@@ -43,6 +45,16 @@ func Validate(ctx context.Context, obj bson.D, fields map[string]CollectionField
 		}
 	}
 	return nil
+}
+
+func CheckObjectNonEmpty(obj interface{}) bool {
+	vReflectTyped := reflect.ValueOf(obj).Kind()
+	if vReflectTyped == reflect.Array ||
+		vReflectTyped == reflect.Slice ||
+		vReflectTyped == reflect.Interface {
+		return reflect.ValueOf(obj).Len() > 0
+	}
+	return obj != nil
 }
 
 func SetValue(m bson.M, key []string, v interface{}) error {

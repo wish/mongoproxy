@@ -427,6 +427,7 @@ var (
 		//  set correct type for array
 		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$set", bson.D{{"friends.$", "linda"}}}}},
 		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$set", bson.D{{"friends.0", "linda"}}}}},
+		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$set", bson.D{{"friends", bson.A{"linda", "test"}}}}}},
 		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$set", bson.D{{"friends.$[]", "linda"}}}}},
 		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$set", bson.D{{"friends.$[foo]", "linda"}}}}},
 
