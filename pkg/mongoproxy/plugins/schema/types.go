@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -39,6 +40,8 @@ const (
 
 	SKIP_SCHEMA_ANNOTATION = "skipSchema"
 )
+
+var OpMap = BuildUpdateOpSet()
 
 type ClusterSchema struct {
 	MongosEndpoint       string              `json:"mongosEndpoint"`
@@ -234,35 +237,54 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 	if !c.EnforceSchema {
 		return nil
 	}
-
-	for _, e := range obj {
-		switch e.Key {
-		case "$currentDate", "$inc", "$min", "$max", "$mul":
-			if setFields == nil {
-				setFields = e.Value.(bson.D).Map()
-			} else {
-				for _, item := range e.Value.(bson.D) {
-					setFields[item.Key] = item.Value
+	logrus.Debugf("pending validation object: %s", obj)
+	/*
+		update command support ,
+		* A document that contains update operator expressions,
+		* A replacement document with only <field1>: <value1> pairs
+		https://www.mongodb.com/docs/v4.2/reference/command/update/#update-statement-documents
+	*/
+	if !strings.HasPrefix(obj[0].Key, "$") || !SetContain(OpMap, obj[0].Key) {
+		m := make(bson.M, len(obj))
+		if upsert {
+			insertFields = handleObj(obj, m)
+			logrus.Debugf("insertFields: %s", insertFields)
+		} else {
+			setFields = handleObj(obj, m)
+			logrus.Debugf("setFields: %s", setFields)
+		}
+	} else {
+		for _, e := range obj {
+			logrus.Debugf("update with operator: %s", e.Key)
+			switch e.Key {
+			case "$currentDate", "$inc", "$min", "$max", "$mul":
+				if setFields == nil {
+					setFields = e.Value.(bson.D).Map()
+				} else {
+					for _, item := range e.Value.(bson.D) {
+						setFields[item.Key] = item.Value
+					}
 				}
-			}
-		case "$rename":
-			renameFields = e.Value.(bson.D).Map()
-		case "$set", "$pull", "$push", "$setToAdd":
-			if setFields == nil {
-				setFields = Mapify(e.Value.(bson.D))
-			} else {
-				for _, item := range e.Value.(bson.D) {
-					item := processArray(item)
-					setFields[item.Key] = item.Value
+			case "$rename":
+				renameFields = e.Value.(bson.D).Map()
+			case "$set", "$pull", "$push", "$addToSet":
+				if setFields == nil {
+					setFields = Mapify(e.Value.(bson.D))
+				} else {
+					for _, item := range e.Value.(bson.D) {
+						item := processArray(item)
+						setFields[item.Key] = item.Value
+					}
 				}
+			case "$setOnInsert":
+				insertFields = Mapify(e.Value.(bson.D))
+			case "$unset":
+				unsetFields = Mapify(e.Value.(bson.D))
+			default:
+				logrus.Errorf("cannot recognize key: %s, value: %f", e.Key, e.Value)
+				logrus.Errorf("can't recognize obj: %s", e)
+				panic("update operator type not supported")
 			}
-		case "$setOnInsert":
-			insertFields = Mapify(e.Value.(bson.D))
-		case "$unset":
-			unsetFields = Mapify(e.Value.(bson.D))
-		default:
-			fmt.Println(e.Key, e.Value)
-			panic("what")
 		}
 	}
 
@@ -311,8 +333,9 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 	for k, v := range setFields {
 		f := c.GetField(strings.Split(k, ".")...)
 		if c.DenyUnknownFields && f == nil {
-			return fmt.Errorf("cannot unset unknown field: %s", k)
+			return fmt.Errorf("cannot set unknown field: %s", k)
 		}
+		//verify that setFields are required before validate
 		if f != nil {
 			if err := f.Validate(ctx, v, c.DenyUnknownFields, true); err != nil {
 				return err
@@ -323,11 +346,13 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 	// if upsert, check an insert as well
 	if upsert {
 		doc := make(bson.M, len(setFields)+len(insertFields))
+		logrus.Debugf("upsert doc built")
 		for k, v := range setFields {
 			if err := SetValue(doc, strings.Split(k, "."), v); err != nil {
 				return err
 			}
 		}
+		logrus.Debugf("finished setField setValue")
 
 		for k, v := range insertFields {
 			if err := SetValue(doc, strings.Split(k, "."), v); err != nil {
@@ -337,6 +362,7 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 		if err := Validate(ctx, ToBsonD(doc), c.Fields, c.DenyUnknownFields, true); err != nil {
 			return err
 		}
+		logrus.Debugf("finished Validate upsert true")
 	}
 	return nil
 }
@@ -413,8 +439,14 @@ func (c *CollectionField) ValidateElement(ctx context.Context, d interface{}, va
 // ValidateInsert will validate the schema of the passed in object.
 func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnknownFields, isUpdate bool) error {
 	validateType := c.Type
-	if isUpdate { // array update is validating a scalar instead of []
-		validateType = BSONType(strings.Trim(string(validateType), "[]"))
+	logrus.Debugf("print collection type: %v", validateType)
+	logrus.Debugf("print interface type: %v", reflect.TypeOf(v))
+	interfaceType := fmt.Sprint(reflect.TypeOf(v))
+	if isUpdate {
+		// array update need to check input type
+		if !strings.HasPrefix(interfaceType, "[]") && interfaceType != "primitive.A" {
+			validateType = BSONType(strings.Trim(string(validateType), "[]"))
+		}
 	}
 	ok := false
 	switch validateType {
@@ -489,6 +521,7 @@ func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnkno
 				}
 			}
 		}
+
 	case OBJECT_ARRAY:
 		switch vTyped := v.(type) {
 		case primitive.A:
@@ -604,7 +637,7 @@ func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnkno
 	}
 
 	if !ok {
-		return fmt.Errorf("%s: wrong data type: expecting a %v but got %T", c.Name, c.Type, v)
+		return fmt.Errorf("wrong data type: expecting a %v but got %T", c.Type, v)
 	}
 	return nil
 }

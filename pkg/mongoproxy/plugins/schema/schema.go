@@ -162,6 +162,7 @@ func (p *SchemaPlugin) Process(ctx context.Context, r *plugins.Request, next plu
 	case *command.FindAndModify:
 		if len(cmd.Update) > 0 {
 			schema := p.GetSchema()
+			logrus.Infof("command findAndModify: %v", cmd.Update)
 			if err := schema.ValidateUpdate(ctx, cmd.Database, cmd.Collection, cmd.Update, bsonutil.GetBoolDefault(cmd.Upsert, false)); err != nil {
 				schemaDeny.WithLabelValues(cmd.Database, cmd.Collection, r.CommandName).Inc()
 				return mongoerror.DocumentValidationFailure.ErrMessage(err.Error()), nil
@@ -171,6 +172,7 @@ func (p *SchemaPlugin) Process(ctx context.Context, r *plugins.Request, next plu
 	case *command.Update:
 		schema := p.GetSchema()
 		for _, updateDoc := range cmd.Updates {
+			logrus.Infof("print command Update: %v", updateDoc)
 			if err := schema.ValidateUpdate(ctx, cmd.Database, cmd.Collection, updateDoc.U, bsonutil.GetBoolDefault(updateDoc.Upsert, false)); err != nil {
 				schemaDeny.WithLabelValues(cmd.Database, cmd.Collection, r.CommandName).Inc()
 				return mongoerror.DocumentValidationFailure.ErrMessage(err.Error()), nil

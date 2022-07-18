@@ -8,69 +8,174 @@
 						"skipSchema": "true"
 					}
 				},
-				"bsontypes": {
+				"bsonint": {
 					"fields": {
 						"int": {
-							"type": "int"
-						},
+							"type": "int",
+							"required": true
+						}
+					},
+					"enforceSchema": true
+				},
+				"bsonlong": {
+					"fields": {
 						"long": {
-							"type": "long"
-						},
+							"type": "long",
+							"required": true
+						}
+					},
+					"enforceSchema": true
+				},
+				"bsondouble": {
+					"fields": {
 						"double": {
-							"type": "double"
-						},
+							"type": "double",
+							"required": true
+						}
+					},
+					"enforceSchema": true
+				},
+				"bsonstring": {
+					"fields": {
 						"string": {
-							"type": "string"
-						},
+							"type": "string",
+							"required": true
+						}
+					},
+					"enforceSchema": true
+				},
+				"bsonobject": {
+					"fields": {
 						"object": {
 							"type": "object",
+							"required": true,
 							"subfields": {
 								"string": {
-									"type": "string"
+									"type": "string",
+									"required": true
 								},
 								"int": {
-									"type": "int"
+									"type": "int",
+									"required": true
 								}
 							}
-						},
+						}
+					},
+					"enforceSchema": true
+				},
+				"bsonbindata": {
+					"fields": {
 						"bindata": {
-							"type": "binData"
-						},
+							"type": "binData",
+							"required": true
+						}
+					},
+					"enforceSchema": true
+				},
+				"bsonobjectid": {
+					"fields": {
 						"objectid": {
-							"type": "objectID"
-						},
+							"type": "objectID",
+							"required": true
+						}
+					},
+					"enforceSchema": true
+				},
+				"bsonbool": {
+					"fields": {
 						"bool": {
-							"type": "bool"
-						},
+							"type": "bool",
+							"required": true
+						}
+					},
+					"enforceSchema": true
+				},
+				"bsondate": {
+					"fields": {
 						"date": {
-							"type": "date"
-						},
+							"type": "date",
+							"required": true
+						}
+					},
+					"enforceSchema": true
+				},
+				"bsonregex": {
+					"fields": {
 						"regex": {
-							"type": "regex"
-						},
+							"type": "regex",
+							"required": true
+						}
+					},
+					"enforceSchema": true
+				},
+				"bsondecimal": {
+					"fields": {
 						"decimal": {
-							"type": "decimal"
-						},
-						"[]string":{
-							"type": "[]string"
-						},
-						"[]int":{
-							"type": "[]int"
-						},
-						"[]long":{
-							"type": "[]long"
-						},
-						"[]double":{
-							"type": "[]double"
-						},
-						"[]bool":{
-							"type": "[]bool"
-						},
-						"[]objectID":{
-							"type": "[]objectID"
-						},
-						"[]object":{
-							"type": "[]object"
+							"type": "decimal",
+							"required": true
+						}
+					},
+					"enforceSchema": true
+				},
+				"bsonstringarr": {
+					"fields": {
+						"[]string": {
+							"type": "[]string",
+							"required": true
+						}
+					},
+					"enforceSchema": true
+				},
+				"bsonintarr": {
+					"fields": {
+						"[]int": {
+							"type": "[]int",
+							"required": true
+						}
+					},
+					"enforceSchema": true
+				},
+				"bsonlongarr": {
+					"fields": {
+						"[]long": {
+							"type": "[]long",
+							"required": true
+						}
+					},
+					"enforceSchema": true
+				},
+				"bsondoublearr": {
+					"fields": {
+						"[]double": {
+							"type": "[]double",
+							"required": true
+						}
+					},
+					"enforceSchema": true
+				},
+				"bsonboolarr": {
+					"fields": {
+						"[]bool": {
+							"type": "[]bool",
+							"required": true
+						}
+					},
+					"enforceSchema": true
+				},
+				"bsonobjectidarr": {
+					"fields": {
+						"[]objectID": {
+							"type": "[]objectID",
+							"required": true
+						}
+					},
+					"enforceSchema": true
+				},
+				"bsonobjectarr": {
+					"fields": {
+						"[]object": {
+							"type": "[]object",
+							"required": true
 						}
 					},
 					"enforceSchema": true
@@ -84,13 +189,24 @@
 					},
 					"enforceSchema": true
 				},
+				"requireadollarsign": {
+					"fields": {
+						"$id": {
+							"required": true,
+							"type": "string"
+						}
+					},
+					"enforceSchema": true
+				},
 				"includerequirea": {
 					"fields": {
 						"included": {
-							"type": "testdb.requirea"
+							"type": "testdb.requirea",
+							"required": true
 						},
 						"includedarr":{
-							"type": "[]testdb.requirea"
+							"type": "[]testdb.requirea",
+							"required": false
 						}
 					},
 					"enforceSchema": true
@@ -109,6 +225,7 @@
 					"denyUnknownFields": true,
 					"fields": {
 						"doc": {
+							"required": true,
 							"subfields": {
 								"a": {
 									"required": true,
@@ -171,7 +288,7 @@
 							"type": "[]int"
 						},
 						"name": {
-							"required": false,
+							"required": true,
 							"type": "string"
 						}
 					},

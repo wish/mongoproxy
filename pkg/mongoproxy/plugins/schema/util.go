@@ -3,6 +3,7 @@ package schema
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"regexp"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -24,11 +25,12 @@ func Validate(ctx context.Context, obj bson.D, fields map[string]CollectionField
 		// If this is an update all `Required` fields should already be set (upper layers
 		// ensure that they aren't un-set). Otherwise we'd require all required fields in
 		// the update doc which is impractical
-		if !isUpdate && f.Required && !ok {
-			return fmt.Errorf("missing required field: %s", k)
+		if !isUpdate && f.Required && (!ok || !CheckObjectNonEmpty(objV)) {
+			return fmt.Errorf("missing required field: %s, or value: %s in object : %s", k, objV, objMap)
 		}
 
-		if ok {
+		// check non-required field's interface{} array object value is not null nor empty
+		if objV != nil && CheckObjectNonEmpty(objV) && ok {
 			if err := f.Validate(ctx, objV, denyUnknownFields, isUpdate); err != nil {
 				return err
 			}
@@ -43,6 +45,16 @@ func Validate(ctx context.Context, obj bson.D, fields map[string]CollectionField
 		}
 	}
 	return nil
+}
+
+func CheckObjectNonEmpty(obj interface{}) bool {
+	vReflectTyped := reflect.ValueOf(obj).Kind()
+	if vReflectTyped == reflect.Array ||
+		vReflectTyped == reflect.Slice ||
+		vReflectTyped == reflect.Interface {
+		return reflect.ValueOf(obj).Len() > 0
+	}
+	return obj != nil
 }
 
 func SetValue(m bson.M, key []string, v interface{}) error {
@@ -84,11 +96,54 @@ func ToBsonD(m bson.M) bson.D {
 	return r
 }
 
+func BuildUpdateOpSet() map[string]struct{} {
+	m := make(map[string]struct{})
+	var exists = struct{}{}
+
+	m["$currentDate"] = exists
+	m["$inc"] = exists
+	m["$min"] = exists
+	m["$max"] = exists
+	m["$mul"] = exists
+	m["$rename"] = exists
+	m["$set"] = exists
+	m["$setOnInsert"] = exists
+	m["$unset"] = exists
+	m["$"] = exists
+	m["$[]"] = exists
+	m["$addToSet"] = exists
+	m["$pop"] = exists
+	m["$pull"] = exists
+	m["$push"] = exists
+	m["$pullAll"] = exists
+	m["$each"] = exists
+	m["$position"] = exists
+	m["$slice"] = exists
+	m["$sort"] = exists
+	m["$bit"] = exists
+
+	return m
+}
+
+func SetContain(m map[string]struct{}, op string) bool {
+	_, c := m[op]
+	return c
+}
+
 // Map creates a map from the elements of the D.
 // It makes additional process for arrays
 func Mapify(d bson.D) bson.M {
 	m := make(bson.M, len(d))
 	for _, e := range d {
+		e := processArray(e)
+		m[e.Key] = e.Value
+	}
+	return m
+}
+
+// looping and process elements in object
+func handleObj(obj bson.D, m bson.M) bson.M {
+	for _, e := range obj {
 		e := processArray(e)
 		m[e.Key] = e.Value
 	}
