@@ -52,6 +52,8 @@ func init() {
 type SchemaPluginConfig struct {
 	// SchemaPath is the path on disk to the schema file to load + watch for changes
 	SchemaPath string `bson:"schemaPath"`
+	// Log EnforceSchema errors
+	EnforceSchemaLogOnly bool `bson:"enforceSchemaLogOnly"`
 }
 
 // This is a plugin that handles sending the request to the acutual downstream mongo
@@ -155,7 +157,11 @@ func (p *SchemaPlugin) Process(ctx context.Context, r *plugins.Request, next plu
 		for _, document := range cmd.Documents {
 			if err := schema.ValidateInsert(ctx, cmd.Database, cmd.Collection, document); err != nil {
 				schemaDeny.WithLabelValues(cmd.Database, cmd.Collection, r.CommandName).Inc()
-				return mongoerror.DocumentValidationFailure.ErrMessage(err.Error()), nil
+				if !p.conf.EnforceSchemaLogOnly {
+					return mongoerror.DocumentValidationFailure.ErrMessage(err.Error()), nil
+				}
+				logrus.Warningf("ENFORCE SCHEMA LOGONLY: %s, in db: %s, collection: %s, with cmd: %s",
+					err.Error(), cmd.Database, cmd.Collection, r.CommandName)
 			}
 		}
 
@@ -165,7 +171,11 @@ func (p *SchemaPlugin) Process(ctx context.Context, r *plugins.Request, next plu
 			logrus.Infof("command findAndModify: %v", cmd.Update)
 			if err := schema.ValidateUpdate(ctx, cmd.Database, cmd.Collection, cmd.Update, bsonutil.GetBoolDefault(cmd.Upsert, false)); err != nil {
 				schemaDeny.WithLabelValues(cmd.Database, cmd.Collection, r.CommandName).Inc()
-				return mongoerror.DocumentValidationFailure.ErrMessage(err.Error()), nil
+				if !p.conf.EnforceSchemaLogOnly {
+					return mongoerror.DocumentValidationFailure.ErrMessage(err.Error()), nil
+				}
+				logrus.Warningf("ENFORCE SCHEMA LOGONLY: %s, in db: %s, collection: %s, with cmd: %s",
+					err.Error(), cmd.Database, cmd.Collection, r.CommandName)
 			}
 		}
 
@@ -175,7 +185,11 @@ func (p *SchemaPlugin) Process(ctx context.Context, r *plugins.Request, next plu
 			logrus.Infof("print command Update: %v", updateDoc)
 			if err := schema.ValidateUpdate(ctx, cmd.Database, cmd.Collection, updateDoc.U, bsonutil.GetBoolDefault(updateDoc.Upsert, false)); err != nil {
 				schemaDeny.WithLabelValues(cmd.Database, cmd.Collection, r.CommandName).Inc()
-				return mongoerror.DocumentValidationFailure.ErrMessage(err.Error()), nil
+				if !p.conf.EnforceSchemaLogOnly {
+					return mongoerror.DocumentValidationFailure.ErrMessage(err.Error()), nil
+				}
+				logrus.Warningf("ENFORCE SCHEMA LOGONLY: %s, in db: %s, collection: %s, with cmd: %s",
+					err.Error(), cmd.Database, cmd.Collection, r.CommandName)
 			}
 		}
 	}

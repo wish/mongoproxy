@@ -18,6 +18,7 @@ func TestSchema(t *testing.T) {
 
 	if err := d.Configure(bson.D{
 		{"schemaPath", "example.json"},
+		{"enforceSchemaLogOnly", false},
 	}); err != nil {
 		t.Fatal(err)
 	}
