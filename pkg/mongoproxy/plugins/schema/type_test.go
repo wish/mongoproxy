@@ -247,6 +247,52 @@ var (
 		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$pull", bson.D{{"a", "name"}, {"doc.b", 1}}}}, Err: true},
 
 		//
+		// pullAll tests
+		//
+		// pullAll wrong type
+		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$pullAll", bson.D{{"name", 1}}}}, Err: true},
+		// pullAll unknown field
+		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$pullAll", bson.D{{"unknown", 1}}}}},
+		// pullAll correct type
+		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$pullAll", bson.D{{"name", "name"}}}}},
+
+		// pullAll wrong type
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$pullAll", bson.D{{"a", 1}}}}, Err: true},
+		// pullAll unknown field
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$pullAll", bson.D{{"unknown", 1}}}}},
+		// pullAll correct type
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$pullAll", bson.D{{"a", "name"}}}}},
+		// pullAll extra field
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$pullAll", bson.D{{"a", "name"}, {"b", 1}}}}},
+		// pullAll extra field, don't touch main
+		{DB: "testdb", Collection: "requirea", In: bson.D{{"$pullAll", bson.D{{"b", 1}}}}},
+
+		// pullAll wrong type
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$pullAll", bson.D{{"a", 1}}}}, Err: true},
+		// pullAll unknown field
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$pullAll", bson.D{{"unknown", 1}}}}, Err: true},
+		// pullAll correct type
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$pullAll", bson.D{{"a", "name"}}}}},
+		// pullAll extra field
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$pullAll", bson.D{{"a", "name"}, {"b", 1}}}}, Err: true},
+		// pullAll extra field, don't touch main
+		{DB: "testdb", Collection: "requireonlya", In: bson.D{{"$pullAll", bson.D{{"b", 1}}}}, Err: true},
+
+		// pullAll wrong type
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$pullAll", bson.D{{"doc.a", 1}}}}, Err: true},
+		// Miss required "a" subfield (since this is an update; it is assumed already pulled)
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$pullAll", bson.D{{"doc", bson.D{{"notrequired", "name"}}}}}}, Err: false},
+		// pullAll unknown field
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$pullAll", bson.D{{"doc.unknown", 1}}}}, Err: true},
+		// pullAll correct type
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$pullAll", bson.D{{"doc.a", "name"}}}}},
+		// pullAll correct type
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$pullAll", bson.D{{"doc", bson.D{{"a", "name"}}}}}}},
+		// pullAll extra field
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$pullAll", bson.D{{"doc.a", "name"}, {"doc.b", 1}}}}, Err: true},
+		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$pullAll", bson.D{{"a", "name"}, {"doc.b", 1}}}}, Err: true},
+
+		//
 		// addToSet tests
 		//
 		// addToSet wrong type
