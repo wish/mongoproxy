@@ -281,9 +281,7 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 			case "$unset":
 				unsetFields = Mapify(e.Value.(bson.D))
 			default:
-				logrus.Errorf("cannot recognize key: %s, value: %f", e.Key, e.Value)
-				logrus.Errorf("can't recognize obj: %s", e)
-				panic("update operator type not supported")
+				return fmt.Errorf("cannot recognize key: %s, value: %f, in obj: %s", e.Key, e.Value, e)
 			}
 		}
 	}
