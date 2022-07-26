@@ -155,7 +155,7 @@ func MapifyWithOp(d bson.D, m bson.M) bson.M {
 				m[e.Key] = val
 				continue
 			}
-		} else if _, ok := e.Value.(primitive.D); ok && e.Value.(bson.E).Key == "$each" {
+		} else if _, ok := e.Value.(primitive.E); ok && e.Value.(bson.E).Key == "$each" {
 			m[e.Key] = e.Value.(bson.E).Value
 			continue
 		}
