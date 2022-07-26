@@ -6,6 +6,9 @@ import (
 	"reflect"
 	"regexp"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -137,6 +140,27 @@ func Mapify(d bson.D) bson.M {
 	for _, e := range d {
 		e := processArray(e)
 		m[e.Key] = e.Value
+	}
+	return m
+}
+
+// Map creates a map from the elements of the D with operator
+// It makes additional process for arrays
+func MapifyWithOp(d bson.D, m bson.M) bson.M {
+	for _, e := range d {
+		e := processArray(e)
+		if _, ok := e.Value.(primitive.D); ok {
+			itemValueSet := e.Value.(bson.D).Map()
+			if val, ok := itemValueSet["$each"]; ok {
+				m[e.Key] = val
+				continue
+			}
+		} else if _, ok := e.Value.(primitive.E); ok && e.Value.(bson.E).Key == "$each" {
+			m[e.Key] = e.Value.(bson.E).Value
+			continue
+		}
+		m[e.Key] = e.Value
+		logrus.Debugf("Add %s type element to set", fmt.Sprint(reflect.TypeOf(e.Value)))
 	}
 	return m
 }

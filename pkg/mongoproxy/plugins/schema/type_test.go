@@ -199,6 +199,10 @@ var (
 		// push extra field
 		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$push", bson.D{{"doc.a", "name"}, {"doc.b", 1}}}}, Err: true},
 		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$push", bson.D{{"a", "name"}, {"doc.b", 1}}}}, Err: true},
+		//test with each
+		{DB: "testdb", Collection: "nonrequire", In: bson.D{{"$push", bson.D{{"luckynumbers", bson.D{{"$each", bson.A{1, 2, 3}}}}}}}},
+		//test with each
+		{DB: "testdb", Collection: "nonrequire", In: bson.D{{"$push", bson.D{{"luckynumbers", bson.E{"$each", bson.A{1, 2, 3}}}}}}},
 
 		//
 		// pull tests
@@ -337,6 +341,10 @@ var (
 		// addToSet extra field
 		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$addToSet", bson.D{{"doc.a", "name"}, {"doc.b", 1}}}}, Err: true},
 		{DB: "testdb", Collection: "requireonlysuba", In: bson.D{{"$addToSet", bson.D{{"a", "name"}, {"doc.b", 1}}}}, Err: true},
+		//test with each
+		{DB: "testdb", Collection: "nonrequire", In: bson.D{{"$addToSet", bson.D{{"luckynumbers", bson.D{{"$each", bson.A{1, 2, 3}}}}}}}},
+		//test with each
+		{DB: "testdb", Collection: "nonrequire", In: bson.D{{"$addToSet", bson.D{{"luckynumbers", bson.E{"$each", bson.A{1, 2, 3}}}}}}},
 
 		//
 		// rename tests
