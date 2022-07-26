@@ -6,14 +6,16 @@ import (
 	"io/ioutil"
 	"log"
 	"path"
+	"strings"
 	"sync/atomic"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"gopkg.in/fsnotify.v1"
 
 	"github.com/cespare/xxhash/v2"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
-	"go.mongodb.org/mongo-driver/bson"
-	"gopkg.in/fsnotify.v1"
 
 	"github.com/wish/mongoproxy/pkg/bsonutil"
 	"github.com/wish/mongoproxy/pkg/command"
@@ -114,11 +116,19 @@ func (p *SchemaPlugin) Configure(d bson.D) error {
 	if err := p.LoadSchema(); err != nil {
 		return err
 	}
+	// skip watcher for unit test
+	if strings.HasPrefix(p.conf.SchemaPath, "example.json") {
+		return nil
+	}
+
 	// start watch
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	defer watcher.Close()
+	done := make(chan bool)
 
 	go func() {
 		for {
@@ -145,7 +155,7 @@ func (p *SchemaPlugin) Configure(d bson.D) error {
 	if err := watcher.Add(path.Dir(p.conf.SchemaPath)); err != nil {
 		return err
 	}
-
+	<-done
 	return nil
 }
 
@@ -168,7 +178,7 @@ func (p *SchemaPlugin) Process(ctx context.Context, r *plugins.Request, next plu
 	case *command.FindAndModify:
 		if len(cmd.Update) > 0 {
 			schema := p.GetSchema()
-			logrus.Infof("command findAndModify: %v", cmd.Update)
+			logrus.Debugf("command findAndModify: %v", cmd.Update)
 			if err := schema.ValidateUpdate(ctx, cmd.Database, cmd.Collection, cmd.Update, bsonutil.GetBoolDefault(cmd.Upsert, false)); err != nil {
 				schemaDeny.WithLabelValues(cmd.Database, cmd.Collection, r.CommandName).Inc()
 				if !p.conf.EnforceSchemaLogOnly {
@@ -182,7 +192,7 @@ func (p *SchemaPlugin) Process(ctx context.Context, r *plugins.Request, next plu
 	case *command.Update:
 		schema := p.GetSchema()
 		for _, updateDoc := range cmd.Updates {
-			logrus.Infof("print command Update: %v", updateDoc)
+			logrus.Debugf("print command Update: %v", updateDoc)
 			if err := schema.ValidateUpdate(ctx, cmd.Database, cmd.Collection, updateDoc.U, bsonutil.GetBoolDefault(updateDoc.Upsert, false)); err != nil {
 				schemaDeny.WithLabelValues(cmd.Database, cmd.Collection, r.CommandName).Inc()
 				if !p.conf.EnforceSchemaLogOnly {

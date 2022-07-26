@@ -267,7 +267,7 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 				}
 			case "$rename":
 				renameFields = e.Value.(bson.D).Map()
-			case "$set", "$pull", "$push", "$addToSet", "$pullAll":
+			case "$set", "$pull", "$pullAll":
 				if setFields == nil {
 					setFields = Mapify(e.Value.(bson.D))
 				} else {
@@ -276,6 +276,12 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 						setFields[item.Key] = item.Value
 					}
 				}
+			case "$addToSet", "$push":
+				if setFields == nil {
+					setFields = make(bson.M, len(e.Value.(bson.D)))
+				}
+				setFields = MapifyWithOp(e.Value.(bson.D), setFields)
+
 			case "$setOnInsert":
 				insertFields = Mapify(e.Value.(bson.D))
 			case "$unset":
