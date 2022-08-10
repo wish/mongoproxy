@@ -3,11 +3,12 @@ package schema
 import (
 	"context"
 	"fmt"
+	"reflect"
+	"regexp"
+
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"reflect"
-	"regexp"
 )
 
 var (
@@ -162,7 +163,6 @@ func MapifyWithOp(d bson.D, m bson.M) bson.M {
 	}
 	return m
 }
-
 
 // looping and process elements in object
 func handleObj(obj bson.D, m bson.M) bson.M {

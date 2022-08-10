@@ -3,17 +3,18 @@ package schema
 import (
 	"context"
 	"encoding/json"
+	"io/ioutil"
+	"log"
+	"path"
+	"sync/atomic"
+	"time"
+
 	"github.com/cespare/xxhash/v2"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/fsnotify.v1"
-	"io/ioutil"
-	"log"
-	"path"
-	"sync/atomic"
-	"time"
 
 	"github.com/wish/mongoproxy/pkg/bsonutil"
 	"github.com/wish/mongoproxy/pkg/command"

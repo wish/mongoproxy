@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
+	"strings"
+
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"reflect"
-	"strings"
 )
 
 type BSONType string
@@ -276,7 +277,7 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 						setFields[item.Key] = item.Value
 					}
 				}
-			case "$addToSet","$push":
+			case "$addToSet", "$push":
 				if setFields == nil {
 					setFields = make(bson.M, len(e.Value.(bson.D)))
 				}
