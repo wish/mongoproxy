@@ -3,17 +3,17 @@ package schema
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
-	"log"
-	"path"
-	"sync/atomic"
-
 	"github.com/cespare/xxhash/v2"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/fsnotify.v1"
+	"io/ioutil"
+	"log"
+	"path"
+	"sync/atomic"
+	"time"
 
 	"github.com/wish/mongoproxy/pkg/bsonutil"
 	"github.com/wish/mongoproxy/pkg/command"
@@ -79,6 +79,7 @@ func (p *SchemaPlugin) LoadSchema() (err error) {
 			schemaUpdates.WithLabelValues("false").Add(1)
 		} else {
 			schemaUpdates.WithLabelValues("true").Add(1)
+			logrus.Infof("Schema update succeed")
 		}
 	}()
 	b, err := ioutil.ReadFile(p.conf.SchemaPath)
@@ -114,6 +115,7 @@ func (p *SchemaPlugin) Configure(d bson.D) error {
 	if err := p.LoadSchema(); err != nil {
 		return err
 	}
+
 	// start watch
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -122,30 +124,15 @@ func (p *SchemaPlugin) Configure(d bson.D) error {
 
 	go func() {
 		for {
-			select {
-			case event, ok := <-watcher.Events:
-				if !ok {
-					return
-				}
-				if event.Name != p.conf.SchemaPath {
-					continue
-				}
-				logrus.Debugf("Schema watcher event: %v", event)
-				p.LoadSchema()
-
-			case err, ok := <-watcher.Errors:
-				if !ok {
-					return
-				}
-				logrus.Errorf("Schema watcher: %v", err)
-			}
+			p.LoadSchema()
+			time.Sleep(5 * time.Minute)
 		}
 	}()
 
 	if err := watcher.Add(path.Dir(p.conf.SchemaPath)); err != nil {
 		return err
 	}
-
+	logrus.Infof("Schema watcher added path: %s", path.Dir(p.conf.SchemaPath))
 	return nil
 }
 
@@ -168,7 +155,7 @@ func (p *SchemaPlugin) Process(ctx context.Context, r *plugins.Request, next plu
 	case *command.FindAndModify:
 		if len(cmd.Update) > 0 {
 			schema := p.GetSchema()
-			logrus.Infof("command findAndModify: %v", cmd.Update)
+			logrus.Debugf("command findAndModify: %s", cmd.Update)
 			if err := schema.ValidateUpdate(ctx, cmd.Database, cmd.Collection, cmd.Update, bsonutil.GetBoolDefault(cmd.Upsert, false)); err != nil {
 				schemaDeny.WithLabelValues(cmd.Database, cmd.Collection, r.CommandName).Inc()
 				if !p.conf.EnforceSchemaLogOnly {
@@ -182,7 +169,7 @@ func (p *SchemaPlugin) Process(ctx context.Context, r *plugins.Request, next plu
 	case *command.Update:
 		schema := p.GetSchema()
 		for _, updateDoc := range cmd.Updates {
-			logrus.Infof("print command Update: %v", updateDoc)
+			logrus.Debugf("command Update wiht doc: %v", updateDoc)
 			if err := schema.ValidateUpdate(ctx, cmd.Database, cmd.Collection, updateDoc.U, bsonutil.GetBoolDefault(updateDoc.Upsert, false)); err != nil {
 				schemaDeny.WithLabelValues(cmd.Database, cmd.Collection, r.CommandName).Inc()
 				if !p.conf.EnforceSchemaLogOnly {
