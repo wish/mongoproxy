@@ -267,7 +267,7 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 				}
 			case "$rename":
 				renameFields = e.Value.(bson.D).Map()
-			case "$set", "$pull", "$push", "$addToSet", "$pullAll":
+			case "$set", "$pull", "$pullAll":
 				if setFields == nil {
 					setFields = Mapify(e.Value.(bson.D))
 				} else {
@@ -276,6 +276,11 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 						setFields[item.Key] = item.Value
 					}
 				}
+			case "$addToSet", "$push":
+				if setFields == nil {
+					setFields = make(bson.M, len(e.Value.(bson.D)))
+				}
+				setFields = MapifyWithOp(e.Value.(bson.D), setFields)
 			case "$setOnInsert":
 				insertFields = Mapify(e.Value.(bson.D))
 			case "$unset":
@@ -369,7 +374,7 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 }
 
 type CollectionField struct {
-	Name             string            `json:"-"`
+	Name             string            `json:"alias,omitempty"`
 	Type             BSONType          `json:"type"`
 	remoteCollection *Collection       // Pointer to remote collection (for fields if the type is "foo.bar")
 	Annotations      map[string]string `json:"annotations,omitempty"`
@@ -440,11 +445,8 @@ func (c *CollectionField) ValidateElement(ctx context.Context, d interface{}, va
 // ValidateInsert will validate the schema of the passed in object.
 func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnknownFields, isUpdate bool) error {
 	validateType := c.Type
-	logrus.Debugf("print collection type: %v", validateType)
-	logrus.Debugf("print interface type: %v", reflect.TypeOf(v))
 	interfaceType := fmt.Sprint(reflect.TypeOf(v))
-	if isUpdate {
-		// array update need to check input type
+	if isUpdate { // array update is validating a scalar instead of []
 		if !strings.HasPrefix(interfaceType, "[]") && interfaceType != "primitive.A" {
 			validateType = BSONType(strings.Trim(string(validateType), "[]"))
 		}
@@ -638,7 +640,7 @@ func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnkno
 	}
 
 	if !ok {
-		return fmt.Errorf("wrong data type: expecting a %v but got %T", c.Type, v)
+		return fmt.Errorf("wrong data type: expecting a %v for field %s, but got %T with value %s", c.Type, c.Name, v, v)
 	}
 	return nil
 }
