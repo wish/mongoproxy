@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"io/ioutil"
-	"log"
-	"path"
 	"sync/atomic"
 	"time"
 
@@ -14,7 +12,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
-	"gopkg.in/fsnotify.v1"
 
 	"github.com/wish/mongoproxy/pkg/bsonutil"
 	"github.com/wish/mongoproxy/pkg/command"
@@ -117,12 +114,6 @@ func (p *SchemaPlugin) Configure(d bson.D) error {
 		return err
 	}
 
-	// start watch
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	go func() {
 		for {
 			p.LoadSchema()
@@ -130,10 +121,6 @@ func (p *SchemaPlugin) Configure(d bson.D) error {
 		}
 	}()
 
-	if err := watcher.Add(path.Dir(p.conf.SchemaPath)); err != nil {
-		return err
-	}
-	logrus.Infof("Schema watcher added path: %s", path.Dir(p.conf.SchemaPath))
 	return nil
 }
 

@@ -255,8 +255,7 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 		}
 	} else {
 		for _, e := range obj {
-			// TODO: CHANGE TO DEBUGF
-			logrus.Infof("update with operator: %s", e.Key)
+			logrus.Debugf("update with operator: %s", e.Key)
 			switch e.Key {
 			case "$currentDate", "$inc", "$min", "$max", "$mul":
 				if setFields == nil {
