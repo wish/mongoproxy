@@ -133,6 +133,8 @@ func (p *SchemaPlugin) Process(ctx context.Context, r *plugins.Request, next plu
 			if err := schema.ValidateInsert(ctx, cmd.Database, cmd.Collection, document); err != nil {
 				schemaDeny.WithLabelValues(cmd.Database, cmd.Collection, r.CommandName).Inc()
 				if !p.conf.EnforceSchemaLogOnly {
+					logrus.Errorf("ENFORCE SCHEMA ERROR: %s, in db: %s, collection: %s, with cmd: %s",
+						err.Error(), cmd.Database, cmd.Collection, r.CommandName)
 					return mongoerror.DocumentValidationFailure.ErrMessage(err.Error()), nil
 				}
 				logrus.Warningf("ENFORCE SCHEMA LOGONLY: %s, in db: %s, collection: %s, with cmd: %s",
@@ -147,6 +149,8 @@ func (p *SchemaPlugin) Process(ctx context.Context, r *plugins.Request, next plu
 			if err := schema.ValidateUpdate(ctx, cmd.Database, cmd.Collection, cmd.Update, bsonutil.GetBoolDefault(cmd.Upsert, false)); err != nil {
 				schemaDeny.WithLabelValues(cmd.Database, cmd.Collection, r.CommandName).Inc()
 				if !p.conf.EnforceSchemaLogOnly {
+					logrus.Errorf("ENFORCE SCHEMA ERROR: %s, in db: %s, collection: %s, with cmd: %s",
+						err.Error(), cmd.Database, cmd.Collection, r.CommandName)
 					return mongoerror.DocumentValidationFailure.ErrMessage(err.Error()), nil
 				}
 				logrus.Warningf("ENFORCE SCHEMA LOGONLY: %s, in db: %s, collection: %s, with cmd: %s",
@@ -161,6 +165,8 @@ func (p *SchemaPlugin) Process(ctx context.Context, r *plugins.Request, next plu
 			if err := schema.ValidateUpdate(ctx, cmd.Database, cmd.Collection, updateDoc.U, bsonutil.GetBoolDefault(updateDoc.Upsert, false)); err != nil {
 				schemaDeny.WithLabelValues(cmd.Database, cmd.Collection, r.CommandName).Inc()
 				if !p.conf.EnforceSchemaLogOnly {
+					logrus.Errorf("ENFORCE SCHEMA ERROR: %s, in db: %s, collection: %s, with cmd: %s",
+						err.Error(), cmd.Database, cmd.Collection, r.CommandName)
 					return mongoerror.DocumentValidationFailure.ErrMessage(err.Error()), nil
 				}
 				logrus.Warningf("ENFORCE SCHEMA LOGONLY: %s, in db: %s, collection: %s, with cmd: %s",
