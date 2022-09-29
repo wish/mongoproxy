@@ -7,6 +7,9 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -42,6 +45,10 @@ const (
 )
 
 var OpMap = BuildUpdateOpSet()
+var collectionSchemaLogOnlyDeny = promauto.NewCounterVec(prometheus.CounterOpts{
+	Name: "mongoproxy_plugins_collection_level_logonly_schema_deny_total",
+	Help: "The total deny returns of a command",
+}, []string{"collection", "command"})
 
 type ClusterSchema struct {
 	MongosEndpoint       string              `json:"mongosEndpoint"`
@@ -155,6 +162,13 @@ func (d *Database) ValidateInsert(ctx context.Context, collection string, obj bs
 		}
 		return nil
 	}
+	if c.EnforceSchemaByCollectionLogOnly {
+		if err := c.ValidateInsert(ctx, obj); err != nil {
+			collectionSchemaLogOnlyDeny.WithLabelValues(collection, "insert").Inc()
+			logrus.Errorf("COLLECTION ENFORCE LOG ONLY: %s", err.Error())
+			return nil
+		}
+	}
 
 	return c.ValidateInsert(ctx, obj)
 }
@@ -168,6 +182,13 @@ func (d *Database) ValidateUpdate(ctx context.Context, collection string, obj bs
 		}
 		return nil
 	}
+	if c.EnforceSchemaByCollectionLogOnly {
+		if err := c.ValidateUpdate(ctx, obj, upsert); err != nil {
+			collectionSchemaLogOnlyDeny.WithLabelValues(collection, "update").Inc()
+			logrus.Errorf("COLLECTION ENFORCE LOG ONLY: %s", err.Error())
+			return nil
+		}
+	}
 
 	return c.ValidateUpdate(ctx, obj, upsert)
 }
@@ -180,6 +201,8 @@ type Collection struct {
 	DenyUnknownFields bool `json:"denyUnknownFields,omitempty"`
 	// Whether we should enforce schema check for this collection
 	EnforceSchema bool `json:"enforceSchema,omitempty"`
+	// Whether we should enforce schema check logonly for this collection
+	EnforceSchemaByCollectionLogOnly bool `json:"enforceSchemaByCollectionLogOnly,omitempty"`
 }
 
 func (c *Collection) GetField(names ...string) *CollectionField {
@@ -234,7 +257,7 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 		renameFields bson.M // fields being renamed
 	)
 
-	if !c.EnforceSchema {
+	if !c.EnforceSchema && !c.EnforceSchemaByCollectionLogOnly {
 		return nil
 	}
 	logrus.Debugf("pending validation object: %s", obj)
