@@ -236,7 +236,7 @@ func (c *Collection) GetField(names ...string) *CollectionField {
 
 // ValidateInsert will validate the schema of the passed in object.
 func (c *Collection) ValidateInsert(ctx context.Context, obj bson.D) error {
-	if !c.EnforceSchema {
+	if !c.EnforceSchema && !c.EnforceSchemaByCollectionLogOnly {
 		return nil
 	}
 	return Validate(ctx, obj, c.Fields, c.DenyUnknownFields, false)
