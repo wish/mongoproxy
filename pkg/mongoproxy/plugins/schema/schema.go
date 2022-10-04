@@ -33,7 +33,7 @@ var (
 		Help: "The total deny returns of a command",
 	}, []string{"db", "collection", "command"})
 
-	collectionSchemaLogOnlyDeny = promauto.NewCounterVec(prometheus.CounterOpts{
+	schemaDenyLogOnly = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "mongoproxy_plugins_collection_level_logonly_schema_deny_total",
 		Help: "The total deny returns of a command",
 	}, []string{"collection", "command"})

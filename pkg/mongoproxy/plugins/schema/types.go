@@ -157,7 +157,7 @@ func (d *Database) ValidateInsert(ctx context.Context, collection string, obj bs
 	}
 	if c.EnforceSchemaByCollectionLogOnly {
 		if err := c.ValidateInsert(ctx, obj); err != nil {
-			collectionSchemaLogOnlyDeny.WithLabelValues(collection, "insert").Inc()
+			schemaDenyLogOnly.WithLabelValues(collection, "insert").Inc()
 			logrus.Errorf("COLLECTION ENFORCE LOG ONLY: %s", err.Error())
 			return nil
 		}
@@ -177,7 +177,7 @@ func (d *Database) ValidateUpdate(ctx context.Context, collection string, obj bs
 	}
 	if c.EnforceSchemaByCollectionLogOnly {
 		if err := c.ValidateUpdate(ctx, obj, upsert); err != nil {
-			collectionSchemaLogOnlyDeny.WithLabelValues(collection, "update").Inc()
+			schemaDenyLogOnly.WithLabelValues(collection, "update").Inc()
 			logrus.Errorf("COLLECTION ENFORCE LOG ONLY: %s", err.Error())
 			return nil
 		}
