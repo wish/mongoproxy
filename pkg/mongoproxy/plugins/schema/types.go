@@ -7,9 +7,6 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
-
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -45,10 +42,6 @@ const (
 )
 
 var OpMap = BuildUpdateOpSet()
-var collectionSchemaLogOnlyDeny = promauto.NewCounterVec(prometheus.CounterOpts{
-	Name: "mongoproxy_plugins_collection_level_logonly_schema_deny_total",
-	Help: "The total deny returns of a command",
-}, []string{"collection", "command"})
 
 type ClusterSchema struct {
 	MongosEndpoint       string              `json:"mongosEndpoint"`
@@ -164,7 +157,7 @@ func (d *Database) ValidateInsert(ctx context.Context, collection string, obj bs
 	}
 	if c.EnforceSchemaByCollectionLogOnly {
 		if err := c.ValidateInsert(ctx, obj); err != nil {
-			collectionSchemaLogOnlyDeny.WithLabelValues(collection, "insert").Inc()
+			schemaDenyLogOnly.WithLabelValues(collection, "insert").Inc()
 			logrus.Errorf("COLLECTION ENFORCE LOG ONLY: %s", err.Error())
 			return nil
 		}
@@ -184,7 +177,7 @@ func (d *Database) ValidateUpdate(ctx context.Context, collection string, obj bs
 	}
 	if c.EnforceSchemaByCollectionLogOnly {
 		if err := c.ValidateUpdate(ctx, obj, upsert); err != nil {
-			collectionSchemaLogOnlyDeny.WithLabelValues(collection, "update").Inc()
+			schemaDenyLogOnly.WithLabelValues(collection, "update").Inc()
 			logrus.Errorf("COLLECTION ENFORCE LOG ONLY: %s", err.Error())
 			return nil
 		}

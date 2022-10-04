@@ -28,11 +28,15 @@ var (
 		Name: "mongoproxy_plugins_schema_config_hash",
 		Help: "The current hash of the schema config file loaded",
 	})
-
 	schemaDeny = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "mongoproxy_plugins_schema_deny_total",
 		Help: "The total deny returns of a command",
 	}, []string{"db", "collection", "command"})
+
+	schemaDenyLogOnly = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "mongoproxy_plugins_schema_deny_logonly_total",
+		Help: "The total deny returns of a command",
+	}, []string{"collection", "command"})
 )
 
 const (
@@ -132,13 +136,11 @@ func (p *SchemaPlugin) Process(ctx context.Context, r *plugins.Request, next plu
 		for _, document := range cmd.Documents {
 			if err := schema.ValidateInsert(ctx, cmd.Database, cmd.Collection, document); err != nil {
 				schemaDeny.WithLabelValues(cmd.Database, cmd.Collection, r.CommandName).Inc()
+				logrus.Warningf("ENFORCE SCHEMA ERROR: %s, in db: %s, collection: %s, with cmd: %s",
+					err.Error(), cmd.Database, cmd.Collection, r.CommandName)
 				if !p.conf.EnforceSchemaLogOnly {
-					logrus.Errorf("ENFORCE SCHEMA ERROR: %s, in db: %s, collection: %s, with cmd: %s",
-						err.Error(), cmd.Database, cmd.Collection, r.CommandName)
 					return mongoerror.DocumentValidationFailure.ErrMessage(err.Error()), nil
 				}
-				logrus.Warningf("ENFORCE SCHEMA LOGONLY: %s, in db: %s, collection: %s, with cmd: %s",
-					err.Error(), cmd.Database, cmd.Collection, r.CommandName)
 			}
 		}
 
@@ -148,13 +150,11 @@ func (p *SchemaPlugin) Process(ctx context.Context, r *plugins.Request, next plu
 			logrus.Debugf("command findAndModify: %s", cmd.Update)
 			if err := schema.ValidateUpdate(ctx, cmd.Database, cmd.Collection, cmd.Update, bsonutil.GetBoolDefault(cmd.Upsert, false)); err != nil {
 				schemaDeny.WithLabelValues(cmd.Database, cmd.Collection, r.CommandName).Inc()
+				logrus.Warningf("ENFORCE SCHEMA ERROR: %s, in db: %s, collection: %s, with cmd: %s",
+					err.Error(), cmd.Database, cmd.Collection, r.CommandName)
 				if !p.conf.EnforceSchemaLogOnly {
-					logrus.Errorf("ENFORCE SCHEMA ERROR: %s, in db: %s, collection: %s, with cmd: %s",
-						err.Error(), cmd.Database, cmd.Collection, r.CommandName)
 					return mongoerror.DocumentValidationFailure.ErrMessage(err.Error()), nil
 				}
-				logrus.Warningf("ENFORCE SCHEMA LOGONLY: %s, in db: %s, collection: %s, with cmd: %s",
-					err.Error(), cmd.Database, cmd.Collection, r.CommandName)
 			}
 		}
 
@@ -164,13 +164,11 @@ func (p *SchemaPlugin) Process(ctx context.Context, r *plugins.Request, next plu
 			logrus.Debugf("command Update wiht doc: %v", updateDoc)
 			if err := schema.ValidateUpdate(ctx, cmd.Database, cmd.Collection, updateDoc.U, bsonutil.GetBoolDefault(updateDoc.Upsert, false)); err != nil {
 				schemaDeny.WithLabelValues(cmd.Database, cmd.Collection, r.CommandName).Inc()
+				logrus.Warningf("ENFORCE SCHEMA ERROR: %s, in db: %s, collection: %s, with cmd: %s",
+					err.Error(), cmd.Database, cmd.Collection, r.CommandName)
 				if !p.conf.EnforceSchemaLogOnly {
-					logrus.Errorf("ENFORCE SCHEMA ERROR: %s, in db: %s, collection: %s, with cmd: %s",
-						err.Error(), cmd.Database, cmd.Collection, r.CommandName)
 					return mongoerror.DocumentValidationFailure.ErrMessage(err.Error()), nil
 				}
-				logrus.Warningf("ENFORCE SCHEMA LOGONLY: %s, in db: %s, collection: %s, with cmd: %s",
-					err.Error(), cmd.Database, cmd.Collection, r.CommandName)
 			}
 		}
 	}
