@@ -7,9 +7,6 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
-
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -45,10 +42,6 @@ const (
 )
 
 var OpMap = BuildUpdateOpSet()
-var collectionSchemaLogOnlyDeny = promauto.NewCounterVec(prometheus.CounterOpts{
-	Name: "mongoproxy_plugins_collection_level_logonly_schema_deny_total",
-	Help: "The total deny returns of a command",
-}, []string{"collection", "command"})
 
 type ClusterSchema struct {
 	MongosEndpoint       string              `json:"mongosEndpoint"`
