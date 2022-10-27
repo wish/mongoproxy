@@ -3,11 +3,12 @@ package schema
 import (
 	"context"
 	"fmt"
+	"reflect"
+	"regexp"
+
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"reflect"
-	"regexp"
 )
 
 var (
