@@ -3,12 +3,11 @@ package schema
 import (
 	"context"
 	"fmt"
-	"reflect"
-	"regexp"
-
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"reflect"
+	"regexp"
 )
 
 var (
@@ -171,6 +170,16 @@ func handleObj(obj bson.D, m bson.M) bson.M {
 		m[e.Key] = e.Value
 	}
 	return m
+}
+
+func upsertOrSetField(upsert bool, insertFields bson.M, setFields bson.M, obj bson.D, m bson.M) {
+	if upsert {
+		insertFields = handleObj(obj, m)
+		logrus.Debugf("insertFields: %s", insertFields)
+	} else {
+		setFields = handleObj(obj, m)
+		logrus.Debugf("setFields: %s", setFields)
+	}
 }
 
 func processArray(e bson.E) bson.E {

@@ -221,6 +221,24 @@
 					},
 					"enforceSchema": true
 				},
+				"requireonlyarray": {
+					"denyUnknownFields": false,
+					"fields": {
+						"a": {
+							"required": true,
+							"type": "string"
+						},
+						"b": {
+							"required": false,
+							"type": "[]object"
+						},
+						"c": {
+							"required": false,
+							"type": "object"
+						}
+					},
+					"enforceSchema": true
+				},
 				"requireonlysuba": {
 					"denyUnknownFields": true,
 					"fields": {
@@ -233,6 +251,64 @@
 								},
 								"notrequired": {
 									"type": "string"
+								}
+							},
+							"type": "object"
+						}
+					},
+					"enforceSchema": true
+				},
+				"requireonlysubddnosub": {
+					"denyUnknownFields": false,
+					"fields": {
+						"doc": {
+							"required": true,
+							"type": "object"
+						}
+					},
+					"enforceSchema": true
+				},
+				"requireonlysubddwithsub": {
+					"denyUnknownFields": false,
+					"fields": {
+						"doc": {
+							"required": true,
+							"subfields": {
+								"a": {
+									"required": true,
+									"type": "object"
+								}
+							},
+							"type": "object"
+						}
+					},
+					"enforceSchema": true
+				},
+				"requireonlysubddwithsubdeny": {
+					"denyUnknownFields": true,
+					"fields": {
+						"doc": {
+							"required": true,
+							"subfields": {
+								"a": {
+									"required": true,
+									"type": "object"
+								}
+							},
+							"type": "object"
+						}
+					},
+					"enforceSchema": true
+				},
+				"requireonlysubddwithsubarr": {
+					"denyUnknownFields": false,
+					"fields": {
+						"doc": {
+							"required": true,
+							"subfields": {
+								"a": {
+									"required": true,
+									"type": "[]string"
 								}
 							},
 							"type": "object"

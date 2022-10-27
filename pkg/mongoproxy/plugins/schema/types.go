@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -206,6 +207,11 @@ func (c *Collection) GetField(names ...string) *CollectionField {
 			if !ok {
 				return nil
 			}
+			vType := fmt.Sprint(v.Type)
+			if vType == "object" && v.SubFields == nil {
+				field = &v
+				break
+			}
 			field = &v
 		} else {
 			var (
@@ -216,6 +222,10 @@ func (c *Collection) GetField(names ...string) *CollectionField {
 				v, ok = field.remoteCollection.Fields[name]
 			} else {
 				v, ok = field.SubFields[name]
+				if _, err := strconv.ParseInt(name,10,64); err == nil {
+					ok = true
+				}
+				print("okokokok  ,", ok)
 			}
 			if !ok {
 				logrus.Debugf("can not find field in collection: %s", name)
@@ -248,6 +258,7 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 		insertFields bson.M // Insert fields (if we have them) -- only for upserts
 		unsetFields  bson.M // fields being unset
 		renameFields bson.M // fields being renamed
+		flag bool
 	)
 
 	if !c.EnforceSchema && !c.EnforceSchemaByCollectionLogOnly {
@@ -262,12 +273,26 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 	*/
 	if !strings.HasPrefix(obj[0].Key, "$") || !SetContain(OpMap, obj[0].Key) {
 		m := make(bson.M, len(obj))
-		if upsert {
-			insertFields = handleObj(obj, m)
-			logrus.Debugf("insertFields: %s", insertFields)
+		var findOp = []string{"$in", "$nin", "$eq", "$gt", "$gte", "$lt", "$lte", "$ne"}
+		interfaceType := fmt.Sprint(reflect.TypeOf(obj[0].Value))
+		if string(interfaceType) == "primitive.D" {
+			curObj := obj[0].Value.(primitive.D)
+			curMap := curObj.Map()
+			for _, s := range findOp {
+				if _, ok := curMap[s]; ok {
+					newObj := bson.D{{obj[0].Key, curMap[s]}}
+					upsertOrSetField(upsert, insertFields, setFields, newObj, m)
+				}
+			}
 		} else {
-			setFields = handleObj(obj, m)
-			logrus.Debugf("setFields: %s", setFields)
+			if upsert {
+				insertFields = handleObj(obj, m)
+				logrus.Debugf("insertFields: %s", insertFields)
+			} else {
+				setFields = handleObj(obj, m)
+				fmt.Println(obj)
+				logrus.Debugf("setFields: %s", setFields)
+			}
 		}
 	} else {
 		for _, e := range obj {
@@ -359,8 +384,39 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 			return fmt.Errorf("cannot set a required field with nil value: %f", v)
 		}
 		if f != nil && v != nil {
-			if err := f.Validate(ctx, v, c.DenyUnknownFields, true); err != nil {
-				return err
+			fString := fmt.Sprint(c.GetField(strings.Split(k, ".")[0]).Type)
+			if fString == "object" {
+				if c.GetField(strings.Split(k, ".")[0]).SubFields == nil {
+					flag = true
+					continue
+				} else {
+					for _, e := range obj {
+						newObj := e.Value.(bson.D)
+						for _, i := range newObj {
+							newKey := i.Key
+							newVal := i.Value
+							fObj := c.GetField(strings.Split(newKey, ".")...)
+							fObjStr := strings.Trim(fmt.Sprint(fObj), "&{")
+							fObjStr = strings.TrimSpace(fObjStr)
+							if fObj == nil || strings.HasPrefix(fObjStr, "<nil>") {
+								if !c.DenyUnknownFields {
+									flag = true
+									continue
+								} else {
+									logrus.Errorf("Can't set value for unknonw field %s", newKey)
+									break
+								}
+							}
+							if err := fObj.Validate(ctx, newVal, c.DenyUnknownFields, true); err != nil {
+								return err
+							}
+						}
+					}
+				}
+			} else {
+				if err := f.Validate(ctx, v, c.DenyUnknownFields, true); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -369,12 +425,14 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 	if upsert {
 		doc := make(bson.M, len(setFields)+len(insertFields))
 		logrus.Debugf("upsert doc built")
-		for k, v := range setFields {
-			if err := SetValue(doc, strings.Split(k, "."), v); err != nil {
-				return err
+		if !flag {
+			for k, v := range setFields {
+				if err := SetValue(doc, strings.Split(k, "."), v); err != nil {
+					return err
+				}
 			}
+			logrus.Debugf("finished setField setValue")
 		}
-		logrus.Debugf("finished setField setValue")
 
 		for k, v := range insertFields {
 			if err := SetValue(doc, strings.Split(k, "."), v); err != nil {
@@ -461,6 +519,8 @@ func (c *CollectionField) ValidateElement(ctx context.Context, d interface{}, va
 // ValidateInsert will validate the schema of the passed in object.
 func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnknownFields, isUpdate bool) error {
 	validateType := c.Type
+	fmt.Println("$%$%$%$%$%", validateType)
+	fmt.Println("$%$%$%$%$%", c.Name)
 	interfaceType := fmt.Sprint(reflect.TypeOf(v))
 	if isUpdate { // array update is validating a scalar instead of []
 		if !strings.HasPrefix(interfaceType, "[]") && interfaceType != "primitive.A" {
