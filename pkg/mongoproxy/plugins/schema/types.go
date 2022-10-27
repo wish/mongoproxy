@@ -525,8 +525,6 @@ func (c *CollectionField) ValidateElement(ctx context.Context, d interface{}, va
 // ValidateInsert will validate the schema of the passed in object.
 func (c *CollectionField) Validate(ctx context.Context, v interface{}, denyUnknownFields, isUpdate bool) error {
 	validateType := c.Type
-	fmt.Println("$%$%$%$%$%", validateType)
-	fmt.Println("$%$%$%$%$%", c.Name)
 	interfaceType := fmt.Sprint(reflect.TypeOf(v))
 	if isUpdate { // array update is validating a scalar instead of []
 		if !strings.HasPrefix(interfaceType, "[]") && interfaceType != "primitive.A" {
