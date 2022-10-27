@@ -222,7 +222,7 @@ func (c *Collection) GetField(names ...string) *CollectionField {
 				v, ok = field.remoteCollection.Fields[name]
 			} else {
 				v, ok = field.SubFields[name]
-				if _, err := strconv.ParseInt(name,10,64); err == nil {
+				if _, err := strconv.ParseInt(name, 10, 64); err == nil {
 					ok = true
 				}
 				print("okokokok  ,", ok)
@@ -258,7 +258,7 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 		insertFields bson.M // Insert fields (if we have them) -- only for upserts
 		unsetFields  bson.M // fields being unset
 		renameFields bson.M // fields being renamed
-		flag bool
+		flag         bool
 	)
 
 	if !c.EnforceSchema && !c.EnforceSchemaByCollectionLogOnly {
