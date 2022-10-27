@@ -173,16 +173,6 @@ func handleObj(obj bson.D, m bson.M) bson.M {
 	return m
 }
 
-func upsertOrSetField(upsert bool, insertFields bson.M, setFields bson.M, obj bson.D, m bson.M) {
-	if upsert {
-		insertFields = handleObj(obj, m)
-		logrus.Debugf("insertFields: %s", insertFields)
-	} else {
-		setFields = handleObj(obj, m)
-		logrus.Debugf("setFields: %s", setFields)
-	}
-}
-
 func processArray(e bson.E) bson.E {
 	if match := re.Find([]byte(e.Key)); match != nil { // detect array
 		// remove positional info, so tree traverse can proceed

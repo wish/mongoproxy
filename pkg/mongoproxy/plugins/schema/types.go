@@ -281,7 +281,13 @@ func (c *Collection) ValidateUpdate(ctx context.Context, obj bson.D, upsert bool
 			for _, s := range findOp {
 				if _, ok := curMap[s]; ok {
 					newObj := bson.D{{obj[0].Key, curMap[s]}}
-					upsertOrSetField(upsert, insertFields, setFields, newObj, m)
+					if upsert {
+						insertFields = handleObj(newObj, m)
+						logrus.Debugf("insertFields: %s", insertFields)
+					} else {
+						setFields = handleObj(newObj, m)
+						logrus.Debugf("setFields: %s", setFields)
+					}
 				}
 			}
 		} else {
