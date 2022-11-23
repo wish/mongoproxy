@@ -34,15 +34,15 @@ var (
 		Help:       "The duration of mongo commands",
 		Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001, 1.0: 0.0},
 		MaxAge:     time.Minute,
-	}, []string{"db", "collection", "command", "readpref"})
+	}, []string{"db", "collection", "command", "readpref", "authn"})
 	commandInflight = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "mongoproxy_plugins_mongo_command_inflight",
 		Help: "The duration of mongo commands",
-	}, []string{"db", "collection", "command", "readpref"})
+	}, []string{"db", "collection", "command", "readpref", "authn"})
 	commandReceiveBytes = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "mongoproxy_plugins_mongo_command_receive_bytes_total",
 		Help: "The total number of bytes received from downstream",
-	}, []string{"db", "collection", "command", "readpref"})
+	}, []string{"db", "collection", "command", "readpref", "authn"})
 	mongoDiscoveryUpdate = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "mongoproxy_plugins_mongo_discovery_update",
 		Help: "The total number of updates from discovery",
@@ -261,11 +261,17 @@ func (p *MongoPlugin) runCommand(ctx context.Context, db string, cmd command.Com
 func (p *MongoPlugin) Process(ctx context.Context, r *plugins.Request, next plugins.PipelineFunc) (bson.D, error) {
 	start := time.Now()
 
+	isAuthn := "false"
+	if len(r.CC.Identities) > 0 {
+		isAuthn = "true"
+	}
+
 	labels := []string{
 		command.GetCommandDatabase(r.Command),
 		command.GetCommandCollection(r.Command),
 		r.CommandName,
 		command.GetCommandReadPreferenceMode(r.Command),
+		isAuthn,
 	}
 
 	commandInflight.WithLabelValues(labels...).Inc()
