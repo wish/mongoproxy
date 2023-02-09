@@ -29,6 +29,10 @@ var (
 		Name: "mongoproxy_plugins_authz_deny_total",
 		Help: "The total deny returns of a command",
 	}, []string{"db", "collection", "command"})
+        authzLogOnly = promauto.NewCounterVec(prometheus.CounterOpts{
+                Name: "mongoproxy_plugins_authz_logonly_total",
+                Help: "The total num of cmd that hit log only policy",
+        }, []string{"type", "user", "policy", "effect", "method", "resource", "command", "db", "collection"})
 
 	OPEN_COMMAND = map[string]struct{}{
 		"isMaster":         {},
@@ -540,6 +544,7 @@ func (p *AuthzPlugin) Process(ctx context.Context, r *plugins.Request, next plug
 				identitiesStrings = make([][]string, len(identities))
 				for i, id := range identities {
 					identitiesStrings[i] = []string{id.Type(), id.User()}
+                                        authzLogOnly.WithLabelValues(id.Type(), id.User(), logRule.PolicyName, logRule.Effect.String(), result.AuthorizationMethod.String(), result.Resource.String(), r.CommandName, command.GetCommandDatabase(r.Command), command.GetCommandCollection(r.Command)).Inc()
 				}
 			}
 			logrus.NewEntry(logrus.StandardLogger()).WithFields(logrus.Fields{
