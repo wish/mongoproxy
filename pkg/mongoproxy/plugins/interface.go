@@ -33,6 +33,7 @@ func NewCursorCacheEntry(id int64) *CursorCacheEntry {
 }
 
 type CursorCache interface {
+	CreateCursor(cursorID int64) *CursorCacheEntry
 	GetCursor(cursorID int64) *CursorCacheEntry
 	CloseCursor(cursorID int64)
 }

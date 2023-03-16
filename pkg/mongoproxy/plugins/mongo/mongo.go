@@ -302,7 +302,7 @@ func (p *MongoPlugin) Process(ctx context.Context, r *plugins.Request, next plug
 				if cursorID, ok := cursorIDRaw.(int64); ok && cursorID > 0 {
 					logrus.Tracef("Store cursor: %v %v", cursorID, cmdServer)
 					// TODO: TTL from cmd
-					r.CursorCache.GetCursor(cursorID).Map[contextKeyServer] = cmdServer
+					r.CursorCache.CreateCursor(cursorID).Map[contextKeyServer] = cmdServer
 				}
 			}
 		}
@@ -530,6 +530,13 @@ func (p *MongoPlugin) Process(ctx context.Context, r *plugins.Request, next plug
 			v, ok = bsonutil.Lookup(result, "cursorsKilled")
 			if ok {
 				cursorsKilled = append(cursorsKilled, v.(primitive.A)...)
+				for _, cursorIDRaw := range cursorsKilled {
+					fmt.Println("kill a cursor", cursorIDRaw)
+					cursorID, ok := cursorIDRaw.(int64)
+					if ok {
+						r.CursorCache.CloseCursor(cursorID)
+					}
+				}
 			}
 			v, ok = bsonutil.Lookup(result, "cursorsNotFound")
 			if ok {

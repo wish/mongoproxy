@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ReneKroon/ttlcache/v2"
 	"github.com/getsentry/sentry-go"
+	"github.com/jellydator/ttlcache/v2"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
@@ -91,24 +91,16 @@ func NewProxy(l net.Listener, cfg *config.Config) (*Proxy, error) {
 
 	// Set up cursorCache
 	p.cursorCache.SetTTL(p.cfg.IdleCursorTimeout) // default TTL -- config
-	p.cursorCache.SetLoaderFunction(func(key string) (interface{}, time.Duration, error) {
-		cursorID, err := strconv.ParseInt(key, 10, 64)
-		if err != nil {
-			return nil, time.Duration(0), err
-		}
-
-		return plugins.NewCursorCacheEntry(cursorID), time.Duration(0), nil
-	})
 	// expiration handler to send killCursor commands
 	p.cursorCache.SetExpirationReasonCallback(func(key string, reason ttlcache.EvictionReason, value interface{}) {
 		logrus.Tracef("expire cursor %s", key)
-		i, err := strconv.ParseInt(key, 10, 64)
-		if err != nil {
-			return
-		}
 
 		// If the cursor expired (we timed out waiting) we want to kill the downstream cursor as we remove it from the cache
 		if reason == ttlcache.Expired {
+			i, err := strconv.ParseInt(key, 10, 64)
+			if err != nil {
+				return
+			}
 			p.HandleMongo(context.TODO(), &plugins.Request{CursorCache: p, CC: p.internalCC}, bson.D{
 				{"killCursors", "admin"},
 				{"cursors", primitive.A{i}},
@@ -138,10 +130,26 @@ type Proxy struct {
 	internalCC *plugins.ClientConnection
 }
 
+func (p *Proxy) CreateCursor(cursorID int64) *plugins.CursorCacheEntry {
+	v, err := p.cursorCache.GetByLoader(strconv.FormatInt(cursorID, 10), func(key string) (interface{}, time.Duration, error) {
+		cursorID, err := strconv.ParseInt(key, 10, 64)
+		if err != nil {
+			return nil, time.Duration(0), err
+		}
+
+		return plugins.NewCursorCacheEntry(cursorID), time.Duration(0), nil
+	})
+	if err == ttlcache.ErrNotFound {
+		panic("can't get cursor")
+	}
+
+	return v.(*plugins.CursorCacheEntry)
+}
+
 func (p *Proxy) GetCursor(cursorID int64) *plugins.CursorCacheEntry {
 	v, err := p.cursorCache.Get(strconv.FormatInt(cursorID, 10))
 	if err == ttlcache.ErrNotFound {
-		panic("can't get cursor")
+		return nil
 	}
 
 	return v.(*plugins.CursorCacheEntry)
