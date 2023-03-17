@@ -665,8 +665,7 @@ func TestPlugin(t *testing.T) {
 		/////////////
 		{
 			cmd:  bson.D{{"killCursors", ""}, {"$db", "db"}},
-			good: [][]plugins.ClientIdentity{nil, idents["global"]},
-			bad:  [][]plugins.ClientIdentity{idents["role1"]},
+			good: [][]plugins.ClientIdentity{nil, idents["global"], idents["role1"]},
 		},
 		{
 			cmd:  bson.D{{"killCursors", ""}, {"$db", "authzcolcru"}},

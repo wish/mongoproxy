@@ -368,8 +368,12 @@ func (p *AuthzPlugin) resourcesForCommand(r *plugins.Request, c command.Command)
 		}
 
 	case *command.GetMore:
-		cursorResources := r.CursorCache.GetCursor(cmd.CursorID).Map[contextKeyResources]
-		if cr, ok := cursorResources.(map[authzlib.AuthorizationMethod][]authzlib.Resource); ok {
+		cursorCacheEntry := r.CursorCache.GetCursor(cmd.CursorID)
+		// If we don't have this cursor, we'll disallow this further down (as we don't know what it is)
+		if cursorCacheEntry == nil {
+			return nil, fmt.Errorf("cursorID %d not found", cmd.CursorID)
+		}
+		if cr, ok := cursorCacheEntry.Map[contextKeyResources].(map[authzlib.AuthorizationMethod][]authzlib.Resource); ok {
 			return cr, nil
 		}
 		return nil, nil
