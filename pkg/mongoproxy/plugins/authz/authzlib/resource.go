@@ -12,6 +12,7 @@ type Resource struct {
 }
 
 // getResource receives a map[string]string and returns the global, dbs, collections and fields
+//
 //	it is attempting to access.
 func getResource(resource map[string]string) (r Resource, err error) {
 	if resource["Global"] == "*" {
