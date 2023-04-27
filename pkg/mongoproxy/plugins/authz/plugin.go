@@ -507,7 +507,7 @@ func (p *AuthzPlugin) Process(ctx context.Context, r *plugins.Request, next plug
 				"commandName": r.CommandName,
 				"database":    command.GetCommandDatabase(r.Command),
 				"collection":  command.GetCommandCollection(r.Command),
-			}).Warningf("Unauthenticated request")
+			}).Infof("Unauthenticated request")
 		}
 
 		identities = append(identities, plugins.NewStaticIdentity(Name, UNAUTHENTICATED_ROLE, UNAUTHENTICATED_ROLE))

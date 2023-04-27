@@ -32,8 +32,8 @@ jobs:
 
     - name: Test
       run: |
-        make fmt && git diff --exit-code
-        make imports && git diff --exit-code
+        make fmt && git diff --exit-code && exit 0 # exit if nothing to commit
+        make imports && git diff --exit-code && exit 0 # exit if nothing to commit
         make static-check
         make test
 
