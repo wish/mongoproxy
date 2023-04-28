@@ -48,7 +48,7 @@ jobs:
       run: ci/waitnetwork.bash localhost 27017
     
     - name: test mongo
-      run: which mongod >&2 && which mongo >&2 && echo $PATH >&2
+      run: echo $(which mongod) && echo $(which mongo) && echo $PATH
 
     - name: start mongoproxy
       run: cd cmd/mongoproxy && make ci &
