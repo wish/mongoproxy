@@ -56,9 +56,9 @@ jobs:
         echo $(which mongod)
         echo $(which mongo)
         echo $PATH
-        lsof -i -P -n | grep LISTEN
-        ps -ef
-        
+        echo $(ps -ef)
+        echo $(lsof -i -P -n | grep LISTEN)
+      
     - name: start mongoproxy
       run: cd cmd/mongoproxy && make ci &
 
