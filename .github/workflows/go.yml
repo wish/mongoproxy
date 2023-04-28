@@ -47,6 +47,13 @@ jobs:
     - name: wait for mongo
       run: ci/waitnetwork.bash localhost 27017
     
+    - name: Verify MongoDB Installation
+      run: |
+        which mongod
+        which mongo
+        echo $(which mongod)
+        echo $PATH
+        
     - name: test mongo
       run: echo $(which mongod) && echo $(which mongo) && echo $PATH
 
