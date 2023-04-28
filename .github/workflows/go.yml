@@ -40,9 +40,10 @@ jobs:
     # run CI tests
     # start mongo
     - name: MongoDB in GitHub Actions
-      uses: supercharge/mongodb-github-action@1.7.0
+      uses: supercharge/mongodb-github-action@1.9.0
       with:
         mongodb-version: 6.0
+        mongodb-replica-set: test-rs
 
     # Ubuntu removed mongo from their default installed database packages on Ubuntu 22.04.
     # We install mongosh here.
