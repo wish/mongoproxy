@@ -54,14 +54,10 @@ jobs:
     
     - name: Verify MongoDB Installation
       run: |
-        which mongod
-        which mongo
         echo $(which mongod)
+        echo $(which mongo)
         echo $PATH
         
-    - name: test mongo
-      run: echo $(which mongod) && echo $(which mongo) && echo $PATH
-
     - name: start mongoproxy
       run: cd cmd/mongoproxy && make ci &
 
