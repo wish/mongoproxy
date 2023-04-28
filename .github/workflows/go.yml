@@ -41,7 +41,9 @@ jobs:
     # start mongo
     - name: MongoDB in GitHub Actions
       uses: supercharge/mongodb-github-action@1.7.0
-    
+      with:
+        mongodb-version: 6.0
+
     # Ubuntu removed mongo from their default installed database packages on Ubuntu 22.04.
     # We install mongosh here.
     - name: Install mongosh 
