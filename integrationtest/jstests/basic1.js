@@ -7,11 +7,10 @@ o = {
     a: 1
 };
 t.insertOne(o);
-assert.eq(1, t.findOne().a, "first");
+assert(1==t.findOne().a, "first")
 
-o.a = 2;
-t.update({a:1}, o)
-assert.eq(2, t.findOne().a, "second");
+t.updateOne({ a: 1 }, { $set: { a: 2 } })
+assert(2==t.findOne().a, "second")
 
 // not a very good test of currentOp, but tests that it at least
 // is sort of there:
