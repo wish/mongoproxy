@@ -43,11 +43,14 @@ jobs:
       uses: supercharge/mongodb-github-action@1.7.0
       with:
         mongodb-version: '4.4'
-      shell: /bin/bash
+      options: >-
+        --health-cmd mongo
+        --health-interval 10s
+        --health-timeout 5s
+        --health-retries 5
 
     - name: wait for mongo
       run: ci/waitnetwork.bash localhost 27017
-      shell: /bin/bash
     
     - name: Verify MongoDB Installation
       run: |
@@ -55,7 +58,6 @@ jobs:
         which mongo
         echo $(which mongod)
         echo $PATH
-      shell: /bin/bash
         
     - name: test mongo
       run: echo $(which mongod) && echo $(which mongo) && echo $PATH
