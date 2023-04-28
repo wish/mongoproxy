@@ -25,7 +25,7 @@ func TestJSTests(t *testing.T) {
 			return nil
 		}
 		t.Run(path, func(t *testing.T) {
-			cmd := exec.Command("mongo", "localhost:27016", path)
+			cmd := exec.Command("mongosh", "localhost:27016", path)
 			stdoutStderr, err := cmd.CombinedOutput()
 			if err != nil {
 				fmt.Printf("%s\n", stdoutStderr)
