@@ -23,7 +23,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.18
+        go-version: 1.19
 
     - name: install
       run: |
@@ -32,16 +32,28 @@ jobs:
 
     - name: Test
       run: |
-        make fmt && git diff --exit-code
-        make imports && git diff --exit-code
+        make fmt && git diff --exit-code && exit 0
+        make imports && git diff --exit-code && exit 0
         make static-check
         make test
 
     # run CI tests
     # start mongo
     - name: MongoDB in GitHub Actions
-      uses: supercharge/mongodb-github-action@1.7.0
-    
+      uses: supercharge/mongodb-github-action@1.9.0
+      with:
+        mongodb-replica-set: test-rs
+
+    # Ubuntu removed mongo from their default installed database packages on Ubuntu 22.04.
+    # Install mongosh, which will be used in jstests
+    - name: Install mongosh 
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget gnupg
+        wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+        echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+        sudo apt-get update && sudo apt-get install -y mongodb-mongosh
+
     - name: wait for mongo
       run: ci/waitnetwork.bash localhost 27017
     

@@ -550,7 +550,7 @@ func (p *AuthzPlugin) Process(ctx context.Context, r *plugins.Request, next plug
 				"message":    logRule.Message,
 				"method":     result.AuthorizationMethod.String(),
 				"resource":   result.Resource.String(),
-			}).Debugf("Authz LOGONLY")
+			}).Infof("Authz LOGONLY")
 		}
 	}
 
