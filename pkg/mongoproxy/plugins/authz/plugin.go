@@ -542,11 +542,11 @@ func (p *AuthzPlugin) Process(ctx context.Context, r *plugins.Request, next plug
 		for _, logRule := range result.LogOnlyRules {
 			if identitiesStrings == nil {
 				identitiesStrings = make([][]string, len(identities))
-				for i, id := range identities {
-					identitiesStrings[i] = []string{id.Type(), id.User()}
-					log.Println("Hitting metric mongoproxy_plugins_authz_logonly_total...")
-					authzLogOnly.WithLabelValues(id.Type(), id.User(), logRule.PolicyName, logRule.Effect.String(), result.AuthorizationMethod.String(), result.Resource.String(), r.CommandName, command.GetCommandDatabase(r.Command), command.GetCommandCollection(r.Command)).Inc()
-				}
+			}
+			for i, id := range identities {
+				identitiesStrings[i] = []string{id.Type(), id.User()}
+				log.Println("Hitting metric mongoproxy_plugins_authz_logonly_total...")
+				authzLogOnly.WithLabelValues(id.Type(), id.User(), logRule.PolicyName, logRule.Effect.String(), result.AuthorizationMethod.String(), result.Resource.String(), r.CommandName, command.GetCommandDatabase(r.Command), command.GetCommandCollection(r.Command)).Inc()
 			}
 			logrus.NewEntry(logrus.StandardLogger()).WithFields(logrus.Fields{
 				"identities": identitiesStrings,
