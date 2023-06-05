@@ -40,6 +40,8 @@ var (
 		"getnonce":         {},
 		"logout":           {},
 		"ping":             {},
+		"dbStats":          {},
+		"dbstats":          {},
 	}
 )
 
