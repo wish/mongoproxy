@@ -412,6 +412,12 @@ func (p *MongoPlugin) Process(ctx context.Context, r *plugins.Request, next plug
 
 		return runCommand(ctx, dbName, cmd, nil)
 
+	case *command.DbStats:
+		dbName := cmd.Database
+		cmd.Database = ""
+
+		return runCommand(ctx, dbName, cmd, nil)
+
 	case *command.Drop:
 		// TODO: some other way to not double-send the DB
 		dbName := cmd.Database
