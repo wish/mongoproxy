@@ -1,9 +1,0 @@
-goos: linux
-goarch: amd64
-pkg: github.com/wish/mongoproxy/pkg/mongoproxy/plugins/authz
-cpu: AMD Ryzen 7 PRO 5850U with Radeon Graphics     
-BenchmarkPluginDefaultPolicies/0-16  	  750019	      1610 ns/op	    1152 B/op	      10 allocs/op
-BenchmarkPluginDefaultPolicies/1-16  	  671475	      1555 ns/op	    1152 B/op	      10 allocs/op
-BenchmarkPluginDefaultPolicies/2-16  	  992031	      1317 ns/op	     976 B/op	       7 allocs/op
-PASS
-ok  	github.com/wish/mongoproxy/pkg/mongoproxy/plugins/authz	3.653s

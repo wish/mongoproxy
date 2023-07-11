@@ -14,6 +14,18 @@ type priorityQueue struct {
 	items []*item
 }
 
+func (pq *priorityQueue) isEmpty() bool {
+	return len(pq.items) == 0
+}
+
+func (pq *priorityQueue) root() *item {
+	if len(pq.items) == 0 {
+		return nil
+	}
+
+	return pq.items[0]
+}
+
 func (pq *priorityQueue) update(item *item) {
 	heap.Fix(pq, item.queueIndex)
 }
@@ -66,6 +78,8 @@ func (pq *priorityQueue) Pop() interface{} {
 	n := len(old)
 	item := old[n-1]
 	item.queueIndex = -1
+	// de-reference the element to be popped for Garbage Collector to de-allocate the memory
+	old[n-1] = nil
 	pq.items = old[0 : n-1]
 	return item
 }

@@ -2,6 +2,7 @@ package authz
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"path"
 
@@ -145,7 +146,7 @@ func (p *AuthzPlugin) Configure(d bson.D) error {
 	return nil
 }
 
-func (p *AuthzPlugin) resourcesForCommand(r *plugins.Request, c command.Command) map[authzlib.AuthorizationMethod][]authzlib.Resource {
+func (p *AuthzPlugin) resourcesForCommand(r *plugins.Request, c command.Command) (map[authzlib.AuthorizationMethod][]authzlib.Resource, error) {
 	resourceMap := make(map[authzlib.AuthorizationMethod][]authzlib.Resource)
 
 	// Pick which commands we allow without authentication at all
@@ -264,7 +265,11 @@ func (p *AuthzPlugin) resourcesForCommand(r *plugins.Request, c command.Command)
 		}
 
 	case *command.Explain:
-		resourceMap = p.resourcesForCommand(r, cmd.Cmd)
+		var err error
+		resourceMap, err = p.resourcesForCommand(r, cmd.Cmd)
+		if err != nil {
+			return nil, err
+		}
 		switch cmd.Verbosity {
 		case "queryPlanner":
 			resourceMap[authzlib.Read] = append(resourceMap[authzlib.Read], authzlib.Resource{
@@ -365,11 +370,15 @@ func (p *AuthzPlugin) resourcesForCommand(r *plugins.Request, c command.Command)
 		}
 
 	case *command.GetMore:
-		cursorResources := r.CursorCache.GetCursor(cmd.CursorID).Map[contextKeyResources]
-		if cr, ok := cursorResources.(map[authzlib.AuthorizationMethod][]authzlib.Resource); ok {
-			return cr
+		cursorCacheEntry := r.CursorCache.GetCursor(cmd.CursorID)
+		// If we don't have this cursor, we'll disallow this further down (as we don't know what it is)
+		if cursorCacheEntry == nil {
+			return nil, fmt.Errorf("cursorID %d not found", cmd.CursorID)
 		}
-		return nil
+		if cr, ok := cursorCacheEntry.Map[contextKeyResources].(map[authzlib.AuthorizationMethod][]authzlib.Resource); ok {
+			return cr, nil
+		}
+		return nil, nil
 
 	case *command.HostInfo:
 		resourceMap[authzlib.Read] = []authzlib.Resource{
@@ -394,6 +403,23 @@ func (p *AuthzPlugin) resourcesForCommand(r *plugins.Request, c command.Command)
 		}
 
 	case *command.KillCursors:
+		selfCursors := true
+		for i, cursorIDRaw := range cmd.Cursors {
+			cursorID, ok := cursorIDRaw.(int64)
+			if !ok {
+				return nil, fmt.Errorf("field 'cursors' contains an element that is not of type long: %d: \"%v\"", i, cursorIDRaw)
+			}
+			if r.CursorCache.GetCursor(cursorID) == nil {
+				selfCursors = false
+				break
+			}
+		}
+		// If one of the cursors isn't from this client/connection then we require
+		// global write permissions
+		if selfCursors {
+			return nil, nil
+		}
+
 		resourceMap[authzlib.Delete] = []authzlib.Resource{
 			{
 				Global: true,
@@ -479,7 +505,7 @@ func (p *AuthzPlugin) resourcesForCommand(r *plugins.Request, c command.Command)
 		}
 	}
 
-	return resourceMap
+	return resourceMap, nil
 }
 
 // Process is the function executed when a message is called in the pipeline.
@@ -489,10 +515,13 @@ func (p *AuthzPlugin) Process(ctx context.Context, r *plugins.Request, next plug
 		return next(ctx, r)
 	}
 
-	resourceMap := p.resourcesForCommand(r, r.Command)
+	resourceMap, err := p.resourcesForCommand(r, r.Command)
+	if err != nil {
+		return mongoerror.FailedToParse.ErrMessage(err.Error()), nil
+	}
 
 	// If there is no resource; we don't allow the call through
-	if len(resourceMap) == 0 {
+	if resourceMap != nil && len(resourceMap) == 0 {
 		return mongoerror.Unauthorized.ErrMessage("unauthorized no resource for " + r.CommandName), nil
 	}
 

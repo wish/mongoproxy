@@ -22,11 +22,19 @@ type stubCursorCache struct {
 	m map[int64]*plugins.CursorCacheEntry
 }
 
-func (c *stubCursorCache) GetCursor(cursorID int64) *plugins.CursorCacheEntry {
+func (c *stubCursorCache) CreateCursor(cursorID int64) *plugins.CursorCacheEntry {
 	v, ok := c.m[cursorID]
 	if !ok {
 		v = plugins.NewCursorCacheEntry(cursorID)
 		c.m[cursorID] = v
+	}
+	return v
+}
+
+func (c *stubCursorCache) GetCursor(cursorID int64) *plugins.CursorCacheEntry {
+	v, ok := c.m[cursorID]
+	if !ok {
+		return nil
 	}
 	return v
 }
@@ -58,7 +66,7 @@ func TestPluginGetMore(t *testing.T) {
 	p := plugins.BuildPipeline([]plugins.Plugin{d}, func(_ context.Context, r *plugins.Request) (bson.D, error) {
 		switch r.Command.(type) {
 		case *command.Find:
-			r.CursorCache.GetCursor(cursorID)
+			r.CursorCache.CreateCursor(cursorID)
 			return bson.D{
 				{"ok", 1},
 				{"cursor", bson.D{{"id", cursorID}}},
@@ -657,8 +665,7 @@ func TestPlugin(t *testing.T) {
 		/////////////
 		{
 			cmd:  bson.D{{"killCursors", ""}, {"$db", "db"}},
-			good: [][]plugins.ClientIdentity{nil, idents["global"]},
-			bad:  [][]plugins.ClientIdentity{idents["role1"]},
+			good: [][]plugins.ClientIdentity{nil, idents["global"], idents["role1"]},
 		},
 		{
 			cmd:  bson.D{{"killCursors", ""}, {"$db", "authzcolcru"}},

@@ -4,9 +4,9 @@ go 1.13
 
 require (
 	github.com/HdrHistogram/hdrhistogram-go v1.1.0 // indirect
-	github.com/ReneKroon/ttlcache/v2 v2.3.0
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/getsentry/sentry-go v0.9.0
+	github.com/jellydator/ttlcache/v2 v2.11.1
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/json-iterator/go v1.1.11
 	github.com/miekg/dns v1.1.41 // indirect
@@ -20,7 +20,7 @@ require (
 	go.mongodb.org/mongo-driver v1.5.1
 	go.uber.org/automaxprocs v1.3.0
 	golang.org/x/net v0.0.0-20210331212208-0fccb6fa2b5c // indirect
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	golang.org/x/sync v0.1.0
 	golang.org/x/sys v0.0.0-20210426080607-c94f62235c83 // indirect
 	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324
 	gopkg.in/fsnotify.v1 v1.4.7
