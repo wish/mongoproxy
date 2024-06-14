@@ -299,6 +299,7 @@ var (
 		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$addToSet", bson.D{{"name", 1}}}}, Err: true},
 		// addToSet unknown field
 		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$addToSet", bson.D{{"unknown", 1}}}}},
+		{DB: "testdb", Collection: "requireonlyarray", In: bson.D{{"$addToSet", bson.D{{"a", "dsdes"}}}}},
 		// addToSet correct type
 		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$addToSet", bson.D{{"name", "name"}}}}},
 
@@ -401,6 +402,21 @@ var (
 			{"$setOnInsert", bson.D{{"a", "a"}}},
 		}, Upsert: true},
 
+		{DB: "testdb", Collection: "requireonlysubddnosub", In: bson.D{
+			{"$set", bson.D{{"doc.a.123", 1}}},
+		}, Upsert: true},
+		{DB: "testdb", Collection: "requireonlysubddwithsub", In: bson.D{
+			{"$set", bson.D{{"doc.a.123", 1}}},
+		}, Upsert: true},
+		{DB: "testdb", Collection: "requireonlysubddwithsub", In: bson.D{
+			{"$set", bson.D{{"doc.a.123", 1}}},
+		}, Upsert: false},
+		{DB: "testdb", Collection: "requireonlysubddwithsubdeny", In: bson.D{
+			{"$set", bson.D{{"doc.a.123", 1}}},
+		}, Upsert: true, Err: true},
+		{DB: "testdb", Collection: "requireonlysubddwithsubarr", In: bson.D{
+			{"$set", bson.D{{"doc.a.123", "test"}}},
+		}, Upsert: true},
 		// incorrect type
 		{DB: "testdb", Collection: "requireonlya", In: bson.D{
 			{"$set", bson.D{{"a", 1}}},
@@ -472,6 +488,10 @@ var (
 
 		//  set correct type for array
 		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$set", bson.D{{"friends.$", "linda"}}}}},
+		// test operator without $ sign
+		{DB: "testdb", Collection: "requireonlyarray", In: bson.D{{"a", bson.D{{"$eq", "a"}}}}},
+		{DB: "testdb", Collection: "requireonlyarray", In: bson.D{{"b", bson.D{{"$in", bson.A{bson.D{{"a", "b"}}}}}}}},
+		{DB: "testdb", Collection: "requireonlyarray", In: bson.D{{"c", bson.D{{"$nin", bson.D{{"a", "b"}}}}}}},
 		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$set", bson.D{{"friends.0", "linda"}}}}},
 		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$set", bson.D{{"friends", bson.A{"linda", "test"}}}}}},
 		{DB: "testdb", Collection: "testcollection", In: bson.D{{"$set", bson.D{{"friends.$[]", "linda"}}}}},
