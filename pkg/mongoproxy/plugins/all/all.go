@@ -8,6 +8,7 @@ import (
 	_ "github.com/wish/mongoproxy/pkg/mongoproxy/plugins/insort"
 	_ "github.com/wish/mongoproxy/pkg/mongoproxy/plugins/limits"
 	_ "github.com/wish/mongoproxy/pkg/mongoproxy/plugins/mongo"
+	_ "github.com/wish/mongoproxy/pkg/mongoproxy/plugins/nohint"
 	_ "github.com/wish/mongoproxy/pkg/mongoproxy/plugins/opentracing"
 	_ "github.com/wish/mongoproxy/pkg/mongoproxy/plugins/schema"
 	_ "github.com/wish/mongoproxy/pkg/mongoproxy/plugins/slowlog"
