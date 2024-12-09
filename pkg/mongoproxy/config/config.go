@@ -46,7 +46,8 @@ type Config struct {
 
 	InternalIdentity *plugins.StaticIdentity `bson:"internalIdentity"`
 
-	RequestLengthLimit int `bson:"requestLengthLimit"`
+	RequestLengthLimit int           `bson:"requestLengthLimit"`
+	Logging            LoggingConfig `bson:"logging"`
 }
 
 // Load will load all configuration
@@ -84,4 +85,10 @@ func (c *Config) GetPlugins() ([]plugins.Plugin, error) {
 type PluginConfig struct {
 	Name   string `bson:"name"`
 	Config bson.D `bson:"config"`
+}
+
+type LoggingConfig struct {
+	LogIntervalSeconds int32 `bson:"LogIntervalSeconds"`
+	TopN               int   `bson:"topN"`
+	Enable             bool  `bson:"enable"`
 }

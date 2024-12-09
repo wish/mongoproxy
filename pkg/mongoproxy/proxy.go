@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/ReneKroon/ttlcache/v2"
@@ -34,6 +35,8 @@ import (
 	_ "github.com/wish/mongoproxy/pkg/mongoproxy/plugins/all"
 )
 
+type key string
+
 var (
 	clientConnectionCounter = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "mongoproxy_client_accept_total",
@@ -50,6 +53,10 @@ var (
 
 	ErrServerClosed = errors.New("server closed")
 	SKIP_RECOVER    = false
+
+	idCounter      uint64
+	requestIdKey   = "reqId"
+	requestAddrKey = "reqAddr"
 )
 
 func init() {
@@ -76,6 +83,7 @@ func NewProxy(l net.Listener, cfg *config.Config) (*Proxy, error) {
 		cfg:         cfg,
 		doneChan:    make(chan struct{}),
 		cursorCache: ttlcache.NewCache(),
+		reqMonitor:  NewReqMonitor(cfg),
 	}
 
 	// Create internal ClientConnection for "admin" tasks
@@ -136,6 +144,7 @@ type Proxy struct {
 	cursorCache *ttlcache.Cache
 
 	internalCC *plugins.ClientConnection
+	reqMonitor *ReqMonitor
 }
 
 func (p *Proxy) GetCursor(cursorID int64) *plugins.CursorCacheEntry {
@@ -420,6 +429,7 @@ func (p *Proxy) Shutdown(ctx context.Context) error {
 
 func (p *Proxy) handleOp(ctx context.Context, clientConn *plugins.ClientConnection, req *mongowire.Request) (mongowire.WireSerializer, error) {
 	logrus.Debugf("header received: %v", req.GetHeader())
+	p.MarkReqStart(ctx)
 
 	clientMessageCounter.WithLabelValues(req.GetHeader().OpCode.String()).Inc()
 
@@ -576,6 +586,10 @@ func (p *Proxy) clientServeLoop(c net.Conn) error {
 
 		// TODO: context that will close when the client connection closes
 		ctx := context.Background()
+		reqId := atomic.AddUint64(&idCounter, 1)
+		ctx = context.WithValue(ctx, requestIdKey, reqId)
+		ctx = context.WithValue(ctx, requestAddrKey, c.RemoteAddr().String())
+		p.MarkReqReceived(ctx)
 
 		// Unpack request
 
@@ -592,5 +606,31 @@ func (p *Proxy) clientServeLoop(c net.Conn) error {
 				return err
 			}
 		}
+		p.MarkReqComplete(ctx)
 	}
+}
+
+func (p *Proxy) MarkReqReceived(ctx context.Context) {
+	clientAddr := ctx.Value(requestAddrKey).(string)
+	reqId := ctx.Value(requestIdKey).(uint64)
+	p.reqMonitor.UpdateRequestCount(clientAddr)
+	logrus.Debugf("[%d]receive a request from %v", reqId, clientAddr)
+}
+
+func (p *Proxy) MarkReqStart(ctx context.Context) {
+	clientAddr := ctx.Value(requestAddrKey).(string)
+	reqId := ctx.Value(requestIdKey).(uint64)
+	logrus.Debugf("[%d]start a request from %v", reqId, clientAddr)
+}
+
+func (p *Proxy) MarkReqComplete(ctx context.Context) {
+	clientAddr := ctx.Value(requestAddrKey).(string)
+	reqId := ctx.Value(requestIdKey).(uint64)
+	logrus.Debugf("[%d]complete a request from %v", reqId, clientAddr)
+}
+
+func (p *Proxy) MarkReqFail(ctx context.Context) {
+	clientAddr := ctx.Value(requestAddrKey).(string)
+	reqId := ctx.Value(requestIdKey).(uint64)
+	logrus.Debugf("[%d]fail to process a request from %v", reqId, clientAddr)
 }
