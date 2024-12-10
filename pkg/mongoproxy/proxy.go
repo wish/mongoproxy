@@ -429,7 +429,6 @@ func (p *Proxy) Shutdown(ctx context.Context) error {
 
 func (p *Proxy) handleOp(ctx context.Context, clientConn *plugins.ClientConnection, req *mongowire.Request) (mongowire.WireSerializer, error) {
 	logrus.Debugf("header received: %v", req.GetHeader())
-	p.MarkReqStart(ctx)
 
 	clientMessageCounter.WithLabelValues(req.GetHeader().OpCode.String()).Inc()
 
@@ -439,6 +438,7 @@ func (p *Proxy) handleOp(ctx context.Context, clientConn *plugins.ClientConnecti
 		if logrus.IsLevelEnabled(logrus.DebugLevel) {
 			logrus.Debugf("IN OP_QUERY %s", mongowire.ToJson(q, p.cfg.RequestLengthLimit))
 		}
+		p.MarkReqStart(ctx, clientConn.Username(), "OP_QUERY")
 
 		reply, err := p.handleOpQuery(ctx, clientConn, q)
 		if err != nil {
@@ -459,6 +459,7 @@ func (p *Proxy) handleOp(ctx context.Context, clientConn *plugins.ClientConnecti
 		if logrus.IsLevelEnabled(logrus.DebugLevel) {
 			logrus.Debugf("IN OP_KILL_CURSORS %s", mongowire.ToJson(q, p.cfg.RequestLengthLimit))
 		}
+		p.MarkReqStart(ctx, clientConn.Username(), "OP_KILL_CURSORS")
 		p.handleOpKillCursors(ctx, clientConn, q)
 
 	case mongowire.OpGetMore:
@@ -467,6 +468,7 @@ func (p *Proxy) handleOp(ctx context.Context, clientConn *plugins.ClientConnecti
 			logrus.Debugf("IN OP_GETMORE %s", mongowire.ToJson(q, p.cfg.RequestLengthLimit))
 		}
 
+		p.MarkReqStart(ctx, clientConn.Username(), "OP_GETMORE")
 		reply, err := p.handleOpGetMore(ctx, clientConn, q)
 		if logrus.IsLevelEnabled(logrus.DebugLevel) {
 			logrus.Debugf("OUT OP_GETMORE %s", mongowire.ToJson(reply, p.cfg.RequestLengthLimit))
@@ -486,6 +488,7 @@ func (p *Proxy) handleOp(ctx context.Context, clientConn *plugins.ClientConnecti
 			return nil, nil
 		}
 
+		p.MarkReqStart(ctx, clientConn.Username(), "OP_MSG")
 		reply, err := p.handleOpMsg(ctx, clientConn, m)
 		if err != nil {
 			return nil, err
@@ -514,6 +517,7 @@ func (p *Proxy) handleOp(ctx context.Context, clientConn *plugins.ClientConnecti
 		newReq := mongowire.NewRequestWithHeader(*req.GetHeader(), bytes.NewReader(b))
 		newReq.GetHeader().OpCode = m.OriginalOpcode
 		newReq.GetHeader().MessageLength = m.UncompressedSize + mongowire.HeaderLen
+		p.MarkReqStart(ctx, clientConn.Username(), "OP_COMPRESSED")
 		reply, err := p.handleOp(ctx, clientConn, newReq)
 		if err != nil {
 			return nil, err
@@ -589,13 +593,14 @@ func (p *Proxy) clientServeLoop(c net.Conn) error {
 		reqId := atomic.AddUint64(&idCounter, 1)
 		ctx = context.WithValue(ctx, requestIdKey, reqId)
 		ctx = context.WithValue(ctx, requestAddrKey, c.RemoteAddr().String())
-		p.MarkReqReceived(ctx)
+		p.MarkReqReceived(ctx, clientConn.Username())
 
 		// Unpack request
 
 		// Handle Reply (write to wire)
 
 		reply, err := p.handleOp(ctx, clientConn, req)
+
 		if err != nil {
 			return err
 		}
@@ -603,34 +608,29 @@ func (p *Proxy) clientServeLoop(c net.Conn) error {
 		// If we have a reply, write it back out
 		if reply != nil {
 			if err := reply.WriteTo(c); err != nil {
+				p.MarkReqComplete(ctx, clientConn.Username(), false)
 				return err
 			}
 		}
-		p.MarkReqComplete(ctx)
+		p.MarkReqComplete(ctx, clientConn.Username(), true)
 	}
 }
 
-func (p *Proxy) MarkReqReceived(ctx context.Context) {
+func (p *Proxy) MarkReqReceived(ctx context.Context, username string) {
 	clientAddr := ctx.Value(requestAddrKey).(string)
 	reqId := ctx.Value(requestIdKey).(uint64)
 	p.reqMonitor.UpdateRequestCount(clientAddr)
-	logrus.Debugf("[%d]receive a request from %v", reqId, clientAddr)
+	logrus.Debugf("[%d][%v]receive a request from %v", reqId, username, clientAddr)
 }
 
-func (p *Proxy) MarkReqStart(ctx context.Context) {
+func (p *Proxy) MarkReqStart(ctx context.Context, username string, opCode string) {
 	clientAddr := ctx.Value(requestAddrKey).(string)
 	reqId := ctx.Value(requestIdKey).(uint64)
-	logrus.Debugf("[%d]start a request from %v", reqId, clientAddr)
+	logrus.Debugf("[%d][%v]start a request from %v, op code: %v", reqId, username, clientAddr, opCode)
 }
 
-func (p *Proxy) MarkReqComplete(ctx context.Context) {
+func (p *Proxy) MarkReqComplete(ctx context.Context, username string, successful bool) {
 	clientAddr := ctx.Value(requestAddrKey).(string)
 	reqId := ctx.Value(requestIdKey).(uint64)
-	logrus.Debugf("[%d]complete a request from %v", reqId, clientAddr)
-}
-
-func (p *Proxy) MarkReqFail(ctx context.Context) {
-	clientAddr := ctx.Value(requestAddrKey).(string)
-	reqId := ctx.Value(requestIdKey).(uint64)
-	logrus.Debugf("[%d]fail to process a request from %v", reqId, clientAddr)
+	logrus.Debugf("[%d][%v]complete a request from %v, is successful: %v", reqId, username, clientAddr, successful)
 }

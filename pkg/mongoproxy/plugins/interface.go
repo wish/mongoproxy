@@ -3,6 +3,7 @@ package plugins
 import (
 	"context"
 	"net"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 
@@ -86,6 +87,20 @@ func (c *ClientConnection) GetAddr() string {
 }
 
 func (c *ClientConnection) Close() {}
+
+func (c *ClientConnection) Username() string {
+	var usernames []string
+	for _, identity := range c.Identities {
+		usernames = append(usernames, identity.User())
+	}
+	var username string
+	if len(usernames) > 0 {
+		username = strings.Join(usernames, ",")
+	} else {
+		username = "unknown"
+	}
+	return username
+}
 
 type ClientIdentity interface {
 	Type() string // Where the identity came from
