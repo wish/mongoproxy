@@ -477,6 +477,7 @@ func (p *Proxy) handleOp(ctx context.Context, clientConn *plugins.ClientConnecti
 
 	case mongowire.OpMsg:
 		m := req.GetOpMsg()
+		p.MarkReqStart(ctx, clientConn.Username(), "OP_MSG")
 
 		// If the OP_MSG has set moreToCome we aren't allowed to respond
 		// https://docs.mongodb.com/manual/reference/mongodb-wire-protocol/#flag-bits
@@ -488,7 +489,6 @@ func (p *Proxy) handleOp(ctx context.Context, clientConn *plugins.ClientConnecti
 			return nil, nil
 		}
 
-		p.MarkReqStart(ctx, clientConn.Username(), "OP_MSG")
 		reply, err := p.handleOpMsg(ctx, clientConn, m)
 		if err != nil {
 			return nil, err
@@ -619,13 +619,13 @@ func (p *Proxy) clientServeLoop(c net.Conn) error {
 func (p *Proxy) MarkReqReceived(ctx context.Context, username string) {
 	clientAddr := ctx.Value(requestAddrKey).(string)
 	reqId := ctx.Value(requestIdKey).(uint64)
-	p.reqMonitor.UpdateRequestCount(clientAddr)
 	logrus.Debugf("[%d][%v]receive a request from %v", reqId, username, clientAddr)
 }
 
 func (p *Proxy) MarkReqStart(ctx context.Context, username string, opCode string) {
 	clientAddr := ctx.Value(requestAddrKey).(string)
 	reqId := ctx.Value(requestIdKey).(uint64)
+	p.reqMonitor.UpdateRequestCount(clientAddr, opCode)
 	logrus.Debugf("[%d][%v]start a request from %v, op code: %v", reqId, username, clientAddr, opCode)
 }
 
