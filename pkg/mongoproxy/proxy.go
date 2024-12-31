@@ -619,18 +619,18 @@ func (p *Proxy) clientServeLoop(c net.Conn) error {
 func (p *Proxy) MarkReqReceived(ctx context.Context, username string) {
 	clientAddr := ctx.Value(requestAddrKey).(string)
 	reqId := ctx.Value(requestIdKey).(uint64)
-	logrus.Debugf("[%d][%v]receive a request from %v", reqId, username, clientAddr)
+	logrus.Infof("[%d][%v]receive a request from %v", reqId, username, clientAddr)
 }
 
 func (p *Proxy) MarkReqStart(ctx context.Context, username string, opCode string) {
 	clientAddr := ctx.Value(requestAddrKey).(string)
 	reqId := ctx.Value(requestIdKey).(uint64)
 	p.reqMonitor.UpdateRequestCount(clientAddr, opCode)
-	logrus.Debugf("[%d][%v]start a request from %v, op code: %v", reqId, username, clientAddr, opCode)
+	logrus.Infof("[%d][%v]start a request from %v, op code: %v", reqId, username, clientAddr, opCode)
 }
 
 func (p *Proxy) MarkReqComplete(ctx context.Context, username string, successful bool) {
 	clientAddr := ctx.Value(requestAddrKey).(string)
 	reqId := ctx.Value(requestIdKey).(uint64)
-	logrus.Debugf("[%d][%v]complete a request from %v, is successful: %v", reqId, username, clientAddr, successful)
+	logrus.Infof("[%d][%v]complete a request from %v, is successful: %v", reqId, username, clientAddr, successful)
 }
