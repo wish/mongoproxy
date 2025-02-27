@@ -34,15 +34,15 @@ var (
 		Help:       "The duration of mongo commands",
 		Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001, 1.0: 0.0},
 		MaxAge:     time.Minute,
-	}, []string{"db", "collection", "command", "readpref"})
+	}, []string{"client", "db", "collection", "command", "readpref"})
 	commandInflight = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "mongoproxy_plugins_mongo_command_inflight",
 		Help: "The duration of mongo commands",
-	}, []string{"db", "collection", "command", "readpref"})
+	}, []string{"client", "db", "collection", "command", "readpref"})
 	commandReceiveBytes = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "mongoproxy_plugins_mongo_command_receive_bytes_total",
 		Help: "The total number of bytes received from downstream",
-	}, []string{"db", "collection", "command", "readpref"})
+	}, []string{"client", "db", "collection", "command", "readpref"})
 	mongoDiscoveryUpdate = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "mongoproxy_plugins_mongo_discovery_update",
 		Help: "The total number of updates from discovery",
@@ -262,6 +262,7 @@ func (p *MongoPlugin) Process(ctx context.Context, r *plugins.Request, next plug
 	start := time.Now()
 
 	labels := []string{
+		r.GetClientInfo(),
 		command.GetCommandDatabase(r.Command),
 		command.GetCommandCollection(r.Command),
 		r.CommandName,

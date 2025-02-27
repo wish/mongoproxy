@@ -3,6 +3,7 @@ package plugins
 import (
 	"context"
 	"net"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 
@@ -61,6 +62,10 @@ type Request struct {
 
 func (r *Request) Close() {}
 
+func (r *Request) GetClientInfo() string {
+	return r.CC.GetClientInfo()
+}
+
 func NewClientConnection() *ClientConnection {
 	return &ClientConnection{
 		Map: map[interface{}]interface{}{},
@@ -78,11 +83,30 @@ type ClientConnection struct {
 	Map map[interface{}]interface{}
 }
 
+func (c *ClientConnection) GetUsername() string {
+	var usernames []string
+	for _, identity := range c.Identities {
+		usernames = append(usernames, identity.User())
+	}
+	var username string
+	if len(usernames) > 0 {
+		username = strings.Join(usernames, ",")
+	} else {
+		username = "unknown"
+	}
+	return username
+}
+
 func (c *ClientConnection) GetAddr() string {
 	if c.Addr == nil {
 		return ""
 	}
 	return c.Addr.String()
+}
+
+func (c *ClientConnection) GetClientInfo() string {
+	//todo @jiapeng use username or client ip?
+	return c.GetAddr()
 }
 
 func (c *ClientConnection) Close() {}
