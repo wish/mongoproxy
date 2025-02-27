@@ -424,7 +424,7 @@ func (p *Proxy) Shutdown(ctx context.Context) error {
 func (p *Proxy) handleOp(ctx context.Context, clientConn *plugins.ClientConnection, req *mongowire.Request) (mongowire.WireSerializer, error) {
 	logrus.Debugf("header received: %v", req.GetHeader())
 
-	lientMessageCounter.WithLabelValues(clientConn.GetClientInfo(), req.GetHeader().OpCode.String()).Inc()
+	clientMessageCounter.WithLabelValues(clientConn.GetClientInfo(), req.GetHeader().OpCode.String()).Inc()
 
 	switch req.GetHeader().OpCode {
 	case mongowire.OpQuery:
