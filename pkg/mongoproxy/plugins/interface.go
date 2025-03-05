@@ -62,10 +62,6 @@ type Request struct {
 
 func (r *Request) Close() {}
 
-func (r *Request) GetClientInfo() string {
-	return r.CC.GetClientInfo()
-}
-
 func NewClientConnection() *ClientConnection {
 	return &ClientConnection{
 		Map: map[interface{}]interface{}{},
@@ -104,9 +100,22 @@ func (c *ClientConnection) GetAddr() string {
 	return c.Addr.String()
 }
 
+func (c *ClientConnection) GetIpAddr() string {
+	if c.Addr == nil {
+		return ""
+	}
+
+	addr := c.Addr.String()
+
+	if strings.Contains(addr, ":") {
+		addr = strings.Split(addr, ":")[0]
+	}
+
+	return addr
+}
+
 func (c *ClientConnection) GetClientInfo() string {
-	//todo @jiapeng use username or client ip?
-	return c.GetAddr()
+	return c.GetUsername() + "(" + c.GetIpAddr() + ")"
 }
 
 func (c *ClientConnection) Close() {}

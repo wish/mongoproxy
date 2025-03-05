@@ -10,6 +10,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -38,15 +39,15 @@ var (
 	clientConnectionCounter = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "mongoproxy_client_accept_total",
 		Help: "The total number of accepted client connections",
-	}, []string{"client"})
+	}, []string{"client_ip"})
 	clientConnectionGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "mongoproxy_client_connections_open",
 		Help: "The current number of open client client connections",
-	}, []string{"client"})
+	}, []string{"client_ip"})
 	clientMessageCounter = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "mongoproxy_client_message_total",
 		Help: "The total number of messages from clients",
-	}, []string{"client", "opcode"})
+	}, []string{"client_ip", "opcode"})
 
 	ErrServerClosed = errors.New("server closed")
 	SKIP_RECOVER    = false
@@ -329,7 +330,7 @@ func (p *Proxy) Serve() error {
 			return err
 		}
 		labels := []string{
-			c.RemoteAddr().String(),
+			strings.Split(c.RemoteAddr().String(), ":")[0],
 		}
 		clientConnectionCounter.WithLabelValues(labels...).Inc()
 		clientConnectionGauge.WithLabelValues(labels...).Inc()
@@ -424,7 +425,7 @@ func (p *Proxy) Shutdown(ctx context.Context) error {
 func (p *Proxy) handleOp(ctx context.Context, clientConn *plugins.ClientConnection, req *mongowire.Request) (mongowire.WireSerializer, error) {
 	logrus.Debugf("header received: %v", req.GetHeader())
 
-	clientMessageCounter.WithLabelValues(clientConn.GetClientInfo(), req.GetHeader().OpCode.String()).Inc()
+	clientMessageCounter.WithLabelValues(clientConn.GetIpAddr(), req.GetHeader().OpCode.String()).Inc()
 
 	switch req.GetHeader().OpCode {
 	case mongowire.OpQuery:
