@@ -104,18 +104,8 @@ func (c *ClientConnection) GetIpAddr() string {
 	if c.Addr == nil {
 		return ""
 	}
-
 	addr := c.Addr.String()
-
-	if strings.Contains(addr, ":") {
-		addr = strings.Split(addr, ":")[0]
-	}
-
-	return addr
-}
-
-func (c *ClientConnection) GetClientInfo() string {
-	return c.GetUsername() + "(" + c.GetIpAddr() + ")"
+	return strings.Split(addr, ":")[0]
 }
 
 func (c *ClientConnection) Close() {}
