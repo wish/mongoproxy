@@ -38,11 +38,11 @@ var (
 	commandInflight = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "mongoproxy_plugins_mongo_command_inflight",
 		Help: "The duration of mongo commands",
-	}, []string{"client", "client_name", "db", "collection", "command", "readpref"})
+	}, []string{"client_ip", "client_name", "db", "collection", "command", "readpref"})
 	commandReceiveBytes = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "mongoproxy_plugins_mongo_command_receive_bytes_total",
 		Help: "The total number of bytes received from downstream",
-	}, []string{"client", "client_name", "db", "collection", "command", "readpref"})
+	}, []string{"client_ip", "client_name", "db", "collection", "command", "readpref"})
 	mongoDiscoveryUpdate = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "mongoproxy_plugins_mongo_discovery_update",
 		Help: "The total number of updates from discovery",
