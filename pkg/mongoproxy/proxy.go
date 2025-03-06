@@ -10,6 +10,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -35,18 +36,18 @@ import (
 )
 
 var (
-	clientConnectionCounter = promauto.NewCounter(prometheus.CounterOpts{
+	clientConnectionCounter = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "mongoproxy_client_accept_total",
 		Help: "The total number of accepted client connections",
-	})
-	clientConnectionGauge = promauto.NewGauge(prometheus.GaugeOpts{
+	}, []string{"client_ip"})
+	clientConnectionGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "mongoproxy_client_connections_open",
 		Help: "The current number of open client client connections",
-	})
+	}, []string{"client_ip"})
 	clientMessageCounter = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "mongoproxy_client_message_total",
 		Help: "The total number of messages from clients",
-	}, []string{"opcode"})
+	}, []string{"client_ip", "opcode"})
 
 	ErrServerClosed = errors.New("server closed")
 	SKIP_RECOVER    = false
@@ -328,12 +329,15 @@ func (p *Proxy) Serve() error {
 			}
 			return err
 		}
-		clientConnectionCounter.Inc()
-		clientConnectionGauge.Inc()
+		labels := []string{
+			strings.Split(c.RemoteAddr().String(), ":")[0],
+		}
+		clientConnectionCounter.WithLabelValues(labels...).Inc()
+		clientConnectionGauge.WithLabelValues(labels...).Inc()
 
 		go func(c net.Conn) {
 			defer func() {
-				clientConnectionGauge.Dec()
+				clientConnectionGauge.WithLabelValues(labels...).Dec()
 				if !SKIP_RECOVER {
 					if err := recover(); err != nil {
 						logrus.Errorf("Panic in connection: %v", err)
@@ -421,7 +425,7 @@ func (p *Proxy) Shutdown(ctx context.Context) error {
 func (p *Proxy) handleOp(ctx context.Context, clientConn *plugins.ClientConnection, req *mongowire.Request) (mongowire.WireSerializer, error) {
 	logrus.Debugf("header received: %v", req.GetHeader())
 
-	clientMessageCounter.WithLabelValues(req.GetHeader().OpCode.String()).Inc()
+	clientMessageCounter.WithLabelValues(clientConn.GetIpAddr(), req.GetHeader().OpCode.String()).Inc()
 
 	switch req.GetHeader().OpCode {
 	case mongowire.OpQuery:

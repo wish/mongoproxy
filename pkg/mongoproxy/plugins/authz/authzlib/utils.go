@@ -26,14 +26,15 @@ func appendArrayIfMissing(slice []string, other []string) []string {
 }
 
 // splitURI receives a uri and returns the dbs, collections and fields
+//
 //	it is attempting to access.
 //
 // uri examples:
+//
 //	db/coll/fld -> [db] [coll] [fld]
 //	db/coll/* -> [db] [coll] [*]
 //	db/coll/fld1,fld2 -> [db] [coll] [fld1 fld2]
 //	db/*/fld1,fld2 -> [db] [*] [fld1 fld2]
-//
 func splitURI(uri string) ([]string, []string, []string, error) {
 	parts := strings.Split(uri, "/")
 	if len(parts) > 3 {
@@ -65,9 +66,11 @@ func splitURI(uri string) ([]string, []string, []string, error) {
 // (e.g. some tree) which can evaluate the permissions without having to expand to
 // all possible options
 // expandResource returns a slice of potential resources that can appear
+//
 //	in config given a single resource.
 //
 // Example:
+//
 //	db/coll/fld -> [db/coll/fld db/coll/* db/*/fld db/*/*
 //					*/coll/fld */*/fld */coll/* */*/*]
 func expandResource(r Resource) []Resource {
